@@ -140,6 +140,11 @@ neither recording nor letting this controller play creates that loop today.
 
 ### A concrete state-to-action example
 
+For a neuron-by-neuron view of the same Maul example, download/open
+[the standalone network example](network-example.html) in a browser. It includes
+the saved weights and activations and works without a model server. Select a
+neuron to see each incoming connection's weight and contribution.
+
 The saved demo's activation artifact includes this real Maul example. The JSON
 below is a readable reconstruction with rounded values and descriptive fields,
 not the raw recorder schema. It contains the 16 features used by this baseline;

@@ -3,6 +3,23 @@
 See [Training and debugging](TRAINING-AND-DEBUGGING.md) for the end-to-end flow,
 tool roles, model files, a real state-to-action JSON example, and commands.
 
+## Interactive network example
+
+Open [network-example.html](network-example.html) in a browser after downloading
+or cloning this repository. It is a standalone view of the saved Maul example:
+16 observed state inputs, hidden layers of 12 and 8 ReLU neurons, and six spell
+probabilities. Select a neuron to inspect its incoming weights, weighted input
+contributions, bias and activation. The example embeds 362 learned parameters
+and one derived state/activation snapshot; it includes no raw recording or actor
+identifiers. It shows a training example, not live inference or training progress.
+Hidden neuron names are indices, not established semantic meanings. Distance is
+divided by 100 yards and clipped to [0, 1]; health is current/max health.
+
+The editable diagram source is [network-view.html](network-view.html). The
+standalone export supplies its own styles/runtime. GitHub's file viewer shows
+HTML source; download/open the standalone file to use the interactions. This
+repository update does not enable a hosted website or GitHub Pages.
+
 The first experiment is implemented in `train.py`. It uses NumPy, includes
 numerically checked backpropagation, and saves weights, per-decision activations
 and a complete training history. This is an executed diagnostic baseline,
