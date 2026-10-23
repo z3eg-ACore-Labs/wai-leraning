@@ -138,6 +138,86 @@ helpers. They are not skills learned by this network. Future reinforcement
 learning would require an additional outcome/reward and optimization loop;
 neither recording nor letting this controller play creates that loop today.
 
+### A concrete state-to-action example
+
+The saved demo's activation artifact includes this real Maul example. The JSON
+below is a readable reconstruction with rounded values and descriptive fields,
+not the raw recorder schema. It contains the 16 features used by this baseline;
+the original recording contains more information.
+
+```json
+{
+  "state": {
+    "self": {
+      "health_fraction": 0.971,
+      "resource_fraction": 0.312,
+      "uses_rage": true,
+      "in_combat": true,
+      "bear_form": true,
+      "casting": false
+    },
+    "selected_target": {
+      "is_ally": false,
+      "is_self": false,
+      "is_dead": false,
+      "health_fraction": 0.648,
+      "distance_yards": 2.750,
+      "has_mark_of_the_wild": false
+    },
+    "party": {
+      "mean_health_fraction": 0.994,
+      "lowest_health_fraction": 0.971,
+      "in_combat_fraction": 0.8,
+      "missing_mark_of_the_wild_fraction": 0.0
+    }
+  },
+  "action_label": {
+    "type": "spell_request",
+    "spell_id": 6808,
+    "spell_name": "Maul"
+  }
+}
+```
+
+In words: the human was in Bear Form and combat, with roughly 97% health,
+selecting a living target at roughly 65% health and 2.75 yards distance, and
+requested Maul. Four of five party members were marked in combat. Resource is
+a normalized fraction, not a raw server rage-unit count.
+
+The training code flattens that state into the feature order stored in
+`model.json`. Booleans become 0 or 1; distance is divided by 100 and clipped.
+The following illustrative target vector is one-hot: the fourth output is the
+human's choice. The implementation uses the equivalent spell-class index for
+its cross-entropy calculation.
+
+```json
+{
+  "input_feature_order": [
+    "Self health", "Self resource", "Uses rage", "Self in combat",
+    "Bear form", "Selected ally", "Selected self", "Selected corpse",
+    "Selected health", "Selected distance / 100 yd", "Party mean health",
+    "Party lowest health", "Party in combat", "Party missing Mark",
+    "Selected has Mark", "Self casting"
+  ],
+  "input_vector": [
+    0.971, 0.312, 1, 1, 1, 0, 0, 0,
+    0.648, 0.02750, 0.994, 0.971, 0.8, 0, 0, 0
+  ],
+  "output_spell_order": [
+    "Swipe (Bear)", "Mark of the Wild", "Bear Form",
+    "Maul", "Skinning", "Faerie Fire (Feral)"
+  ],
+  "expected_output": [0, 0, 0, 1, 0, 0]
+}
+```
+
+The network produces six probabilities rather than a one-hot answer. Training
+adjusts the weights to increase Maul's probability for this example. The saved
+demo reproduced the Maul label after training on it; this shows fitting a seen
+example, not performance on an independent run. A spell-request label also
+does not establish that the spell succeeded or was the best available decision.
+The selected target is input context; this network does not output a target.
+
 ## 2. Directory layout
 
 ```text

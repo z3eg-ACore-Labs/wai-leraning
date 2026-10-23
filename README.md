@@ -1,5 +1,8 @@
 # WAI learning workspace
 
+See [Training and debugging](TRAINING-AND-DEBUGGING.md) for the end-to-end flow,
+tool roles, model files, a real state-to-action JSON example, and commands.
+
 The first experiment is implemented in `train.py`. It uses NumPy, includes
 numerically checked backpropagation, and saves weights, per-decision activations
 and a complete training history. This is an executed diagnostic baseline,
@@ -15,7 +18,9 @@ not the long-term learning framework.
 - pytest: feature extraction, dataset splitting, model serialization and inference
   checks. Keep recordings and generated outputs outside public source repositories.
 
-These tools are selected, not installed by this task. A first live executor is
+CPU PyTorch, NumPy, pytest and TensorBoard are installed in the local environment;
+Netron was downloaded separately. TensorBoard logging and ONNX graph export
+remain planned integrations. A first live executor is
 now implemented in the standalone mod-wai-action server source, with `live.py`
 as the external PyTorch client. It has not been built or run in game. No training
 dashboard or autonomous dungeon policy exists yet. See `BACKLOG.md` and the
