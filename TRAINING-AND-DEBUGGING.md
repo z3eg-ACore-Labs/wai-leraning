@@ -1,5 +1,11 @@
 # WAI: recording, training, inspection and debugging
 
+October 25 source-only addition: [automatic learned-navigation episodes](RL-EPISODE-LOOP.md).
+It describes episode-triggered controller launch, PyTorch PPO, checkpoints, TensorBoard and server
+feedback. The learner/client now has 18 passing offline tests, including automatic repetition and
+failed-update checkpoint preservation. C++ syntax and native process checks passed; no full server
+build or live episode was run. The earlier verification below applies to the older baseline.
+
 Updated: October 23, 2026.
 
 Installation verified October 23: workspace-local `.venv` contains CPU PyTorch

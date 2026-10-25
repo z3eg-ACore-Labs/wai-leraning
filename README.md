@@ -1,5 +1,9 @@
 # WAI learning workspace
 
+The source-only [automatic learned-navigation loop](RL-EPISODE-LOOP.md) is a separate PPO experiment.
+It launches on episode start, not server startup. The learner/client has 18 passing offline tests;
+server syntax and native helper checks passed. Full server build and live integration remain pending.
+
 See [Training and debugging](TRAINING-AND-DEBUGGING.md) for the end-to-end flow,
 tool roles, model files, a real state-to-action JSON example, and commands.
 

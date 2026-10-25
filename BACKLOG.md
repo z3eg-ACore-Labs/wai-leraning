@@ -1,5 +1,10 @@
 # WAI backlog
 
+October 25: automatic cloned-party navigation/PPO source is drafted in `rl_loop.py` and the episode
+module. See `RL-EPISODE-OPERATIONS.md`. On-demand process launch, transitions, checkpoint update,
+automatic repeat and compact feedback passed offline validation (18 learner/client tests plus C++
+syntax/native helpers). Full server build and live integration are pending; no build/server was started.
+
 ## Next: reuse existing neural-network monitoring tools
 
 User preference: use established tools instead of spending compute and time
