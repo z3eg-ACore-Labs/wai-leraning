@@ -263,3 +263,9 @@ Total training reward: -83.9057; weight-change L2: 0.598085.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
 
 Validation: C++ syntax checks passed, including all four party runtime instantiations; scoped core style checks passed. Native regression checks passed, including delayed account visibility, timeout, cancellation and independent wait state. Source fix committed as 56b49b3. No full build or live two-party startup was run.
+
+## October 26 — readable episode counters
+
+At the user's request, human-facing WAI_EPISODE server-log JSON now displays BOSSES_KILLED and DEATHS in uppercase. Canonical episode JSONL retains the original lowercase keys, preserving existing recording consumers and schema compatibility. This is a display-only C++ change, requiring a rebuild/restart to become visible. No model weights or rewards change.
+
+Validation: C++ syntax and scoped style checks passed. No build/server was started and live display is not yet verified.
