@@ -237,3 +237,13 @@ Current live pool status and second-party setup errors are still needed to estab
 
 Total training reward: -83.9017; weight-change L2: 0.481899.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+<!-- wai-training:7b9351dda4786e07e02343914d5914183e1c33f218b9e3bc9ad7a2063b22bf85 -->
+### 2026-10-26 13:22:51 UTC — checkpoint v7
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | timeout | 0/4 | 0 | 3600.7 | 896 | 26 | 153 | 2.000 |
+
+Total training reward: -83.9057; weight-change L2: 0.598085.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
