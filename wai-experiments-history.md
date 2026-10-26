@@ -335,3 +335,9 @@ PlayerBots source commit f0d3392f. C++ syntax checks for changed translation uni
 
 Total training reward: -205.0771; weight-change L2: 0.199909.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+## October 26 — post-fight corpse cleanup and CraftTrail request
+
+The user requested priority corpse cleanup after combat and made a CraftTrail dropdown fix the higher priority. Investigation found no installed CraftTrail source in the workspace, only an older preview ZIP containing InkTrail; the active addon path was requested rather than patching an unverified version. CraftTrail remains pending that path.
+
+Independent server work extends the existing Corpse Explosion strategy to non-combat defaults and removes the live-enemy requirement once out of combat. Learned spell, cooldown, runic power, eligible corpse, range and line-of-sight checks remain. Corpses can be cleared after the last enemy dies, but resource/target constraints can prevent a cast. Changed-source C++ syntax, full module codestyle and clang-format checks passed. No full build, server start or live combat test was performed; rebuild/restart required. Existing unrelated work remains preserved and upstream synchronization remains unverified from the earlier failed fetch.
