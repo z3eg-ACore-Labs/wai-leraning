@@ -324,3 +324,14 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 At the user's request, Death Knight bots now receive an independent Corpse Explosion combat strategy by default, at the top combat priority band (99, below reserved pull actions). The action uses learned-spell range/radius metadata and cached corpse candidates, checks combat, cooldown and runic power, and selects an eligible corpse whose blast reaches the current live enemy. It excludes invalid/consumed corpses and does not sacrifice a living ghoul. The earlier low-priority Unholy AoE entries and forced Blood Presence prerequisite were removed. This is deterministic PlayerBots behavior, not a neural-network training update.
 
 PlayerBots source commit f0d3392f. C++ syntax checks for changed translation units, the full module codestyle checker, creator registration checks and clang-format validation passed. No full build or live combat test was run; server rebuild/restart required. Best-effort upstream fetch failed, synchronization unverified. Existing unrelated changes were preserved.
+
+<!-- wai-training:ec81c7e0f9ae68162e8c38d755c969082f7bae5e0e594f4da6ad424545a68429 -->
+### 2026-10-26 16:53:57 UTC — checkpoint v11
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 387.8 | 94 | 26 | 30 | 0.311 |
+| 2 | wandering_off_limits | 0/4 | 0 | 182.7 | 43 | 26 | 18 | 0.113 |
+
+Total training reward: -205.0771; weight-change L2: 0.199909.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
