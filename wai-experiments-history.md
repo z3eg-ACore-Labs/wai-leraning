@@ -214,3 +214,16 @@ automatically retried because their execution may already have occurred. Authent
 are not retried. Persistent delays still stop the controller. The underlying server delay has
 not been established. This Python-only fix needs a controller restart, not a server rebuild;
 live recovery from a delayed server remains unverified.
+
+## October 26 — recoverable boundary design and parallel-start observation
+
+The user observed same-instance movement into exterior-looking geometry and requested penalties
+instead of discarding the whole run. The approved next step was a draft, recorded in
+MOVEMENT-RECOVERY-DRAFT.md: confirmed violations reject/recover and receive attributable penalties;
+uncertain geometry and missing data are separate. Recovery earns no exploration credit. No runtime
+behavior has changed for this draft. The existing integrity subsystem is still single-party.
+
+The user also reported requesting two parties but seeing only the first. The latest workspace
+recording contains only party-one creation/start receipts; that corroborates missing evidence of a
+second start, not its cause. The latest build log reports successful parallel-capable publication.
+Current live pool status and second-party setup errors are still needed to establish what happened.
