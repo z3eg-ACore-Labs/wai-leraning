@@ -352,3 +352,14 @@ Independent server work extends the existing Corpse Explosion strategy to non-co
 
 Total training reward: -200.7733; weight-change L2: 0.061790.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+<!-- wai-training:b408566dc785d4a08f92e28ac215fb8c6c4cec96bdf363ab459ffa331ade5e19 -->
+### 2026-10-26 16:56:58 UTC — checkpoint v13
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 34.1 | 6 | 26 | 4 | 0.027 |
+| 2 | wandering_off_limits | 0/4 | 0 | 70.2 | 15 | 26 | 5 | 0.043 |
+
+Total training reward: -200.7680; weight-change L2: 0.059118.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
