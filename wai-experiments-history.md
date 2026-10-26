@@ -506,3 +506,14 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 
 Total training reward: -202.3968; weight-change L2: 0.024776.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+<!-- wai-training:7262afbfff091f32b7766344fdee191a860267ba43599b0e1ee0ba87d9d9aba8 -->
+### 2026-10-26 18:18:06 UTC — checkpoint v27
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 22.1 | 3 | 26 | 2 | 0.004 |
+| 2 | wandering_off_limits | 0/4 | 0 | 34.1 | 6 | 26 | 4 | 0.024 |
+
+Total training reward: -200.3303; weight-change L2: 0.023521.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
