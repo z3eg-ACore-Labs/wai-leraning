@@ -671,3 +671,16 @@ The user requested green console messages for significant WAI events while keepi
 The user asked whether one party's failure cancels all parties. The latest recorded four-party batch instead shows independent wandering_off_limits outcomes for party four at about 130 seconds, party two at 143 seconds and party three at 348 seconds. Party one's latest inspected record is a member snapshot around 664 seconds, with no terminal event in that journal at inspection. Finished parties are parked while the synchronous batch waits for all results. A prior completed batch recorded four independently timed off-limits outcomes and a successful shared checkpoint update (version 39). These observations confirm independent gameplay termination and batch waiting, not successful dungeon completion or validated geometric accuracy.
 
 Source still has a separate global-stop path: collector exceptions such as transport failures, setup/early-terminal collection failures, or failed shared training stop the entire pool. Ordinary fully recorded wipe/timeout/off-limits gameplay outcomes do not use that exception path. No scheduling or gameplay behavior was changed during this diagnosis.
+
+<!-- wai-training:8d610dfaf222f43a5107cfaaf5ff8cff09a7a0b186434567197e5419549e0794 -->
+### 2026-10-26 20:50:23 UTC — checkpoint v40
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 798.2 | 196 | 26 | 56 | 0.520 |
+| 2 | wandering_off_limits | 0/4 | 0 | 142.5 | 33 | 26 | 10 | 0.025 |
+| 3 | wandering_off_limits | 0/4 | 0 | 347.5 | 84 | 26 | 24 | 0.126 |
+| 4 | wandering_off_limits | 0/4 | 0 | 130.4 | 30 | 26 | 12 | 0.047 |
+
+Total training reward: -413.0615; weight-change L2: 0.087881.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
