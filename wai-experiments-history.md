@@ -318,3 +318,9 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 
 Total training reward: -210.8894; weight-change L2: 0.394487.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+## October 26 — baseline Corpse Explosion strategy
+
+At the user's request, Death Knight bots now receive an independent Corpse Explosion combat strategy by default, at the top combat priority band (99, below reserved pull actions). The action uses learned-spell range/radius metadata and cached corpse candidates, checks combat, cooldown and runic power, and selects an eligible corpse whose blast reaches the current live enemy. It excludes invalid/consumed corpses and does not sacrifice a living ghoul. The earlier low-priority Unholy AoE entries and forced Blood Presence prerequisite were removed. This is deterministic PlayerBots behavior, not a neural-network training update.
+
+PlayerBots source commit f0d3392f. C++ syntax checks for changed translation units, the full module codestyle checker, creator registration checks and clang-format validation passed. No full build or live combat test was run; server rebuild/restart required. Best-effort upstream fetch failed, synchronization unverified. Existing unrelated changes were preserved.
