@@ -74,11 +74,13 @@ never unbind the bot party. This C++ fix requires a new server build.
 
 ## What learns
 
-Sixteen fixed-scale inputs contain position/heading, tank health/resource/combat, party health,
+Sixteen server inputs contain position/heading, tank health/resource/combat, party health,
 alive/combat summaries, completed-boss count, elapsed budget, readiness and movement. They do not
 contain undiscovered boss coordinates, waypoints, a boss order or a recorded route. Actions are wait
 or eight heading-relative six-yard goals. Native navigation can reject movement; requested actions
-and execution results are distinguished. Busy parties are limited to wait.
+and execution results are distinguished. Busy parties are limited to wait. The controller appends
+ten visit-memory features: current-cell visit intensity, episode coverage, and visit novelty at the
+eight heading-relative action endpoints. The neural network therefore receives 26 inputs.
 
 Native combat and follower AI remain. During learned navigation the tank's non-combat stay/grind/
 follow/travel and other destination strategies are removed; stay would cancel the model's movement.
@@ -87,7 +89,7 @@ needed before any route emerges. Generalization to arbitrary dungeons is not dem
 
 ## Model and training
 
-The draft uses PyTorch PPO: shared 16→64→64 tanh encoder, nine-action categorical actor and scalar
+The controller uses PyTorch PPO: shared 26→64→64 tanh encoder, nine-action categorical actor and scalar
 value head. GAE, clipped policy ratios, value loss, entropy, Adam, minibatches and gradient clipping
 drive updates. The initial policy samples exploratory actions. Each run has one fixed checkpoint;
 updates occur between runs. These algorithm choices and coefficients remain unvalidated.
@@ -171,3 +173,42 @@ as requested; profession tools are not automatically supplied.
 Boss deaths print one WAI_BOSS_KILLED uppercase headline per boss per episode, with progress,
 elapsed seconds and death count. The structured boss_kill training record is retained.
 Changed-source MSVC syntax and scoped style pass. Rebuild and live verification remain pending.
+
+## October 26: exploration memory
+
+`exploration.py` derives visits from the tank's existing scaled XYZ server inputs. Spatial cells are
+8×8 yards horizontally and 4 yards vertically; this separates different height bands but is not
+geometric floor or room detection. Slopes can cross vertical bands and thin floors can share one.
+There is no supplied route, boss destination or preloaded dungeon map.
+
+The first observation seeds memory without reward. First visits later in an episode can earn
+`0.02 / sqrt(1 + lifetime_entries)` points, with a maximum of two points per episode. Re-entering an
+already visited cell pays nothing. The whole bonus budget is smaller than one boss reward (+10).
+Only sampled movement outcomes marked `movement_started`, with a non-wait action, no new death,
+1–12 yards of displacement and at most six yards of vertical change can receive the bonus.
+Other positions are still recorded, without rewarding obvious recovery jumps. This heuristic is
+not a wall/collision validator; the user's unrestricted movement experiment remains unrestricted.
+
+Episode visits reset each run. Lifetime entry counts are saved in `navigation.pt`, reducing bonuses
+for repeatedly exploring the same cells across runs. They are snapshots of visited locations, not
+proof that each location was legally reached. Clearing visit counts is a deliberate training change.
+
+Trajectories store environmental reward and exploration bonus separately, plus augmented states.
+Terminal metadata records unique cells, entries and bonus. TensorBoard exposes
+`exploration/unique_cells`, `exploration/entries` and `exploration/bonus`.
+
+On the next controller launch, an older 16-input checkpoint is backed up byte-for-byte as
+`navigation.before-exploration.pt`. Existing weights are copied, ten new input connections start at
+zero, and Adam state is reset because its tensor dimensions changed. An offline regression verifies
+identical pre-training predictions after migration. The saved model then uses the new architecture.
+An existing migration backup causes a legacy retry to stop for inspection rather than overwrite it.
+
+This update is Python-only and needs no server build. It does not reload into an already running
+controller. Let the current experiment finish; at a chosen restart boundary stop the episode cycle,
+clean up its clones, wait for cleanup to finish, then start a fresh cycle. Do not kill a training
+step merely to reload code. Existing incomplete/unconsumed recordings still require review.
+
+Offline verification: 24 focused tests pass, including loop pacing, distinct height cells,
+negative coordinates, teleport suppression, lifetime decay, reward cap, heading-relative memory,
+checkpoint migration and wipe-training repetition. Live exploration effectiveness is not verified.
+Parallel parties feeding one model remain pending; this change does not add parallel execution.

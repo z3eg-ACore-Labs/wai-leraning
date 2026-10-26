@@ -8,7 +8,8 @@ from unittest.mock import patch
 
 import torch
 
-from rl_loop import NavigationPolicy, reward, update, run
+from rl_loop import NavigationPolicy, reward, update, run, checkpoint, rollout
+from exploration import INPUTS
 
 
 class RewardTests(unittest.TestCase):
@@ -31,7 +32,7 @@ class RewardTests(unittest.TestCase):
 class PolicyTests(unittest.TestCase):
     def test_mask_prevents_movement_while_busy(self):
         policy = NavigationPolicy()
-        distribution, _ = policy(torch.zeros(16), torch.tensor([True] + [False] * 8))
+        distribution, _ = policy(torch.zeros(INPUTS), torch.tensor([True] + [False] * 8))
         self.assertEqual(distribution.probs[0].item(), 1)
         self.assertEqual(distribution.probs[1:].sum().item(), 0)
 
@@ -41,7 +42,7 @@ class PolicyTests(unittest.TestCase):
         optimizer = torch.optim.Adam(policy.parameters(), lr=3e-4)
         transitions = []
         for i in range(4):
-            state = [0.1] * 16
+            state = [0.1] * INPUTS
             state[5], state[7] = 0.75, 0
             mask = [True] * 9
             with torch.no_grad():
@@ -91,6 +92,43 @@ class EpisodeTransport:
 
 
 class LoopTests(unittest.TestCase):
+    def test_legacy_checkpoint_preserves_predictions_and_saves_backup(self):
+        with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:
+            home = Path(temporary)
+            policy = NavigationPolicy()
+            optimizer = torch.optim.Adam(policy.parameters(), lr=3e-4)
+            path = home / 'navigation.pt'
+            checkpoint(path, policy, optimizer, 7, '')
+            legacy = torch.load(path, weights_only=True)
+            legacy['architecture'] = [16, 64, 64, 9]
+            legacy['model']['encoder.0.weight'] = legacy['model']['encoder.0.weight'][:, :16].clone()
+            with path.open('wb') as stream:
+                torch.save(legacy, stream)
+            original_bytes = path.read_bytes()
+            raw = torch.arange(16, dtype=torch.float32) / 16
+            mask = torch.tensor([True] * 9)
+            old_policy = NavigationPolicy()
+            old_policy.encoder[0] = torch.nn.Linear(16, 64)
+            old_policy.load_state_dict(legacy['model'])
+            expected, expected_value = old_policy(raw, mask)
+
+            def inspect_then_rollout(soap, model, version, first, counts):
+                augmented = torch.cat((raw, torch.ones(INPUTS - 16)))
+                actual, actual_value = model(augmented, mask)
+                torch.testing.assert_close(actual.probs, expected.probs)
+                torch.testing.assert_close(actual_value, expected_value)
+                return rollout(soap, model, version, first, counts)
+
+            args = SimpleNamespace(home=home, seed=7, episodes=1, url='http://127.0.0.1:7878/')
+            with patch('rl_loop.Soap', return_value=EpisodeTransport()), patch('rl_loop.time.sleep'), \
+                    patch('rl_loop.rollout', side_effect=inspect_then_rollout):
+                run(args)
+            self.assertEqual((home / 'navigation.before-exploration.pt').read_bytes(), original_bytes)
+            saved = torch.load(path, weights_only=True)
+            self.assertEqual(saved['architecture'][0], INPUTS)
+            self.assertEqual(saved['version'], 8)
+            self.assertTrue(saved['exploration_counts'])
+
     def test_wipe_trains_then_starts_fresh_episode(self):
         transport = EpisodeTransport('wipe')
         with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:

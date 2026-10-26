@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import os
+import shutil
 from pathlib import Path
 import time
 
@@ -18,16 +19,18 @@ from torch.utils.tensorboard import SummaryWriter
 from filelock import FileLock
 
 from live import Soap
+from exploration import VisitMemory, INPUTS, SETTINGS as EXPLORATION_SETTINGS
 
 SCHEMA = 1
-ARCHITECTURE = [16, 64, 64, 9]
+ARCHITECTURE = [INPUTS, 64, 64, 9]
+LEGACY_ARCHITECTURE = [16, 64, 64, 9]
 GAMEPLAY_OUTCOMES = {'completed_all_bosses', 'wipe', 'timeout', 'member_left_instance'}
 
 
 class NavigationPolicy(nn.Module):
     def __init__(self):
         super().__init__()
-        self.encoder = nn.Sequential(nn.Linear(16, 64), nn.Tanh(), nn.Linear(64, 64), nn.Tanh())
+        self.encoder = nn.Sequential(nn.Linear(INPUTS, 64), nn.Tanh(), nn.Linear(64, 64), nn.Tanh())
         self.actor = nn.Linear(64, 9)
         self.critic = nn.Linear(64, 1)
 
@@ -47,7 +50,7 @@ def atomic_json(path, value):
     os.replace(temporary, path)
 
 
-def checkpoint(path, model, optimizer, version, episode, trajectory_sha256=''):
+def checkpoint(path, model, optimizer, version, episode, trajectory_sha256='', exploration_counts=None):
     temporary = path.with_name(path.name + '.tmp')
     if any(not torch.isfinite(p).all() for p in model.parameters()):
         raise ValueError('Non-finite model update; previous checkpoint retained')
@@ -57,7 +60,9 @@ def checkpoint(path, model, optimizer, version, episode, trajectory_sha256=''):
                 'trajectory_sha256': trajectory_sha256,
                 'gamma': 0.99, 'gae_lambda': 0.95, 'clip': 0.2, 'epochs': 4,
                 'reward': {'completion': 1000, 'boss': 10, 'death': -5,
-                           'second': -0.01, 'failure': -50, 'version': 1}}
+                           'second': -0.01, 'failure': -50, 'version': 2},
+                'exploration': EXPLORATION_SETTINGS,
+                'exploration_counts': exploration_counts or {}}
     # Let Python open Windows paths, including paths unsupported by the native archive writer.
     with temporary.open('w+b') as stream:
         torch.save(payload, stream)
@@ -89,19 +94,25 @@ def reward(before, after):
     return value
 
 
-def rollout(soap, model, version, first):
+def rollout(soap, model, version, first, lifetime_counts=None):
     transitions = []
     state = first
+    memory = VisitMemory(lifetime_counts)
+    initialized = False
     while state['phase'] != 'finished':
         if state['phase'] != 'running' or len(state['features']) != 16:
             time.sleep(0.25)
             state = observation(soap)
             continue
+        if not initialized:
+            memory.enter(state['features'])
+            initialized = True
+        inputs = memory.features(state['features'])
         # Wait is always allowed. Movement is deferred during combat/recovery/resting.
         movable = bool(state['features'][14]) and not bool(state['features'][15])
         mask = [True] + [movable] * 8
         with torch.no_grad():
-            distribution, estimate = model(torch.tensor(state['features']), torch.tensor(mask))
+            distribution, estimate = model(torch.tensor(inputs), torch.tensor(mask))
             action = distribution.sample()
             log_probability = distribution.log_prob(action).item()
         command = f"waiepisode act {state['episode']} {state['seq']} {action.item()} v{version}"
@@ -114,15 +125,24 @@ def rollout(soap, model, version, first):
                 raise RuntimeError('Episode changed during a rollout')
             if following['phase'] == 'finished' or following['seq'] > state['seq']:
                 break
-        transitions.append({'state': state['features'], 'mask': mask, 'action': action.item(),
+        bonus = 0.0
+        if len(following['features']) == 16:
+            bonus = memory.enter(following['features'], state['features'],
+                                 eligible=following['deaths'] == state['deaths'] and action.item() != 0 and
+                                 following.get('action_result') == 'movement_started')
+        environmental_reward = reward(state, following)
+        transitions.append({'state': inputs, 'mask': mask, 'action': action.item(),
                             'log_probability': log_probability, 'value': estimate.item(),
-                            'reward': reward(state, following), 'sequence': state['seq'],
+                            'reward': environmental_reward + bonus,
+                            'environment_reward': environmental_reward, 'exploration_bonus': bonus,
+                            'sequence': state['seq'],
                             'action_result': following.get('action_result', 'unknown'),
-                            'next_state': following['features'], 'done': following['phase'] == 'finished'})
+                            'next_state': memory.features(following['features']) if following['features'] else [],
+                            'done': following['phase'] == 'finished'})
         if len(transitions) > 4096:
             raise RuntimeError('Rollout budget exceeded')
         state = following
-    return transitions, state
+    return transitions, dict(state, exploration=memory.summary())
 
 
 def update(model, optimizer, transitions):
@@ -193,14 +213,30 @@ def run(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
     path = args.home / 'navigation.pt'
     version, last_episode = 0, ''
+    lifetime_counts = {}
     if path.exists():
         saved = torch.load(path, map_location='cpu', weights_only=True)
-        if saved.get('architecture') != ARCHITECTURE or saved.get('schema') != SCHEMA:
+        legacy = saved.get('architecture') == LEGACY_ARCHITECTURE
+        if saved.get('architecture') not in (ARCHITECTURE, LEGACY_ARCHITECTURE) or saved.get('schema') != SCHEMA:
             raise ValueError('Checkpoint schema mismatch')
+        if legacy:
+            # Keep learned behavior initially unchanged; new memory connections begin at zero.
+            backup = path.with_name('navigation.before-exploration.pt')
+            if backup.exists():
+                raise ValueError('Legacy migration backup already exists; inspect before retrying')
+            shutil.copy2(path, backup)
+            weights = saved['model']['encoder.0.weight']
+            saved['model']['encoder.0.weight'] = torch.cat((weights, torch.zeros((64, INPUTS - 16))), dim=1)
         model.load_state_dict(saved['model'], strict=True)
-        optimizer.load_state_dict(saved['optimizer'])
+        if not legacy:
+            optimizer.load_state_dict(saved['optimizer'])
         torch.set_rng_state(saved['rng'])
         version, last_episode = saved['version'], saved['last_episode']
+        lifetime_counts = saved.get('exploration_counts', {})
+        if legacy:
+            checkpoint(path, model, optimizer, version, last_episode,
+                       saved.get('trajectory_sha256', ''), lifetime_counts)
+            print('Exploration inputs added; previous weights preserved, optimizer reset, backup saved.', flush=True)
     else:
         checkpoint(path, model, optimizer, version, last_episode)
     soap = Soap(args.url, os.environ.get('WAI_SOAP_USER'), os.environ.get('WAI_SOAP_PASSWORD'), 'waiepisode ')
@@ -222,7 +258,7 @@ def run(args):
                 if current['episode'] != last_episode:
                     raise RuntimeError('Unconsumed finished episode; inspect recording before continuing')
             else:
-                transitions, terminal = rollout(soap, model, version, current)
+                transitions, terminal = rollout(soap, model, version, current, lifetime_counts)
                 episode = terminal['episode']
                 if not episode or any(c not in '0123456789-' for c in episode):
                     raise ValueError('Invalid episode identifier')
@@ -242,7 +278,7 @@ def run(args):
                     model.train()
                     metrics, explanation = update(model, optimizer, transitions)
                     model.eval()
-                    checkpoint(path, model, optimizer, version + 1, episode, trajectory_sha256)
+                    checkpoint(path, model, optimizer, version + 1, episode, trajectory_sha256, lifetime_counts)
                 except Exception:
                     notify(soap, 'failed', episode, version)
                     raise
@@ -262,6 +298,8 @@ def run(args):
                 writer.add_scalar('episode/clear', int(terminal['outcome'] == 'completed_all_bosses'), version)
                 writer.add_scalar('episode/seconds', terminal['elapsed_ms'] / 1000, version)
                 writer.add_scalar('episode/deaths', terminal['deaths'], version)
+                for name in ('unique_cells', 'entries', 'bonus'):
+                    writer.add_scalar('exploration/' + name, terminal['exploration'][name], version)
                 writer.flush()
                 print(f'Episode complete; trained navigation checkpoint v{version}', flush=True)
                 runs += 1
