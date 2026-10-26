@@ -285,3 +285,14 @@ The user chose to end sustained off-limits excursions, penalize the recorded seq
 A confirmed escape ends once as wandering_off_limits, receives a -100 terminal penalty, and is accepted for PPO training before normal repeat. The terminal transition receives no exploration bonus. Existing checkpoints remain compatible. Parallel parties retain one shared batch update and restart after all batch peers finish. Uppercase RUN TERMINATED or RUN FINISHED messages show reason and elapsed/session-best time; RUN TRAINED reports the actual shared parameter-change L2 only after training succeeds. Session bests compare matching template snapshots and monitor/recovery/time settings; they are not persisted across server restarts.
 
 Module implementation committed as 6098446; learner/reward/tests/operations guide as fe0c84f. All 39 focused Python tests passed, including off-limits training before repeat and mixed success/escape parallel batches. C++ syntax instantiation, native boundary timing/isolation regressions and scoped style checks passed. No full build, deployment or live dungeon test was performed. Rebuild/restart and a fresh controller are required. Existing action-receipt timeout handling remains a separate unresolved interruption path.
+
+<!-- wai-training:41eda2c2c5c9a643713b58a1f391e5ed5ddde91ae688673cb7b7d5324074005f -->
+### 2026-10-26 16:29:03 UTC — checkpoint v8
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 407.6 | 99 | 26 | 26 | 0.251 |
+| 2 | wandering_off_limits | 0/4 | 0 | 98.4 | 22 | 26 | 8 | 0.117 |
+
+Total training reward: -204.4919; weight-change L2: 0.104242.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
