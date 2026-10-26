@@ -684,3 +684,16 @@ Source still has a separate global-stop path: collector exceptions such as trans
 
 Total training reward: -413.0615; weight-change L2: 0.087881.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+<!-- wai-training:838038de890e746d7dd832e2473f51ea5060f38a193c7ea6fceaeda413f5a01e -->
+### 2026-10-26 21:02:48 UTC — checkpoint v41
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 34.2 | 6 | 26 | 5 | 0.023 |
+| 2 | wandering_off_limits | 0/4 | 0 | 729.4 | 179 | 26 | 37 | 0.195 |
+| 3 | wandering_off_limits | 0/4 | 0 | 66.4 | 14 | 26 | 3 | 0.011 |
+| 4 | wandering_off_limits | 0/4 | 0 | 62.4 | 13 | 26 | 5 | 0.011 |
+
+Total training reward: -408.2743; weight-change L2: 0.057782.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
