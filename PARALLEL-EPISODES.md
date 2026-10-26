@@ -100,3 +100,17 @@ updates, four parties resuming checkpoint version five, independent files, advan
 visit-count merging, invalid-environment quarantine and checkpoint preservation after failure.
 These tests use no game server or database. MSVC syntax instantiation passes for all four C++ party
 runtimes, and scoped style checks pass. Full linking and live two-party operation remain unverified.
+
+## Second party stays empty during first startup
+
+The native account-creation operation queues database writes. The original parallel implementation
+looked up a newly requested secondary account immediately, which could fail before that write became
+visible. The source fix waits across world updates for up to 30 seconds, then resumes normal template
+validation and cloning. It does not sleep on the world thread or retry account creation repeatedly.
+Existing dedicated accounts follow the normal validation path.
+
+Expect a pool preparation message, one numbered queue receipt per party, and, for a new account,
+`account_preparing` followed by `account_ready`. Failures report `dedicated_account_creation_failed`
+or `dedicated_account_creation_timeout`. Status includes `account_preparing`; stop/cleanup cancels
+pending setup. A pending setup also prevents starting another pool over it. No passwords are logged.
+This C++ fix requires a server rebuild and restart before it can affect live startup.

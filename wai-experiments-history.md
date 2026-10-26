@@ -228,6 +228,20 @@ recording contains only party-one creation/start receipts; that corroborates mis
 second start, not its cause. The latest build log reports successful parallel-capable publication.
 Current live pool status and second-party setup errors are still needed to establish what happened.
 
+## October 26 — secondary-account startup race
+
+The user supplied a party-two status receipt with an empty phase, and party one's terminal receipt
+showed an administrative stop rather than a gameplay failure. Source inspection identified a race:
+native account creation queues writes, but secondary-party startup queried the new account immediately
+and aborted if it was not yet visible. This explains a possible first-start failure; the specific
+original party-two error receipt has not been supplied, so the live cause is not proven conclusively.
+
+The source now waits across world updates, bounded to 30 seconds, before resuming ordinary clone
+validation. Pending setup is isolated per party, cancellable by stop/cleanup, and prevents an
+overlapping pool start. New preparation/ready/error events and numbered queue receipts expose the
+stage that previously appeared silent. No credentials are logged. This change requires a rebuild;
+no server or full build has been started during this fix.
+
 <!-- wai-training:720c4c9c1a718ef5390e5ac50495b11e4149e94cc179dfa75632f3eb85933f6f -->
 ### 2026-10-26 12:22:37 UTC — checkpoint v6
 
@@ -247,3 +261,5 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 
 Total training reward: -83.9057; weight-change L2: 0.598085.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+Validation: C++ syntax checks passed, including all four party runtime instantiations; scoped core style checks passed. Native regression checks passed, including delayed account visibility, timeout, cancellation and independent wait state. Source fix committed as 56b49b3. No full build or live two-party startup was run.
