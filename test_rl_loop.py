@@ -92,6 +92,11 @@ class EpisodeTransport:
 
 
 class LoopTests(unittest.TestCase):
+    def setUp(self):
+        history = patch('rl_loop.record_training')
+        self.history = history.start()
+        self.addCleanup(history.stop)
+
     def test_legacy_checkpoint_preserves_predictions_and_saves_backup(self):
         with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:
             home = Path(temporary)
@@ -164,6 +169,7 @@ class LoopTests(unittest.TestCase):
             report = next(i for i, c in enumerate(commands) if c.startswith('waiepisode training report'))
             self.assertLess(report, commands.index('waiepisode repeat'))
             self.assertEqual(sum(c.startswith('waiepisode act ') for c in commands), 2)
+            self.assertEqual(self.history.call_count, 2)
 
     def test_failed_training_preserves_previous_checkpoint_and_stops_repeat(self):
         transport = EpisodeTransport()

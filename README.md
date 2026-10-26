@@ -1,8 +1,13 @@
 # WAI learning workspace
 
-The source-only [automatic learned-navigation loop](RL-EPISODE-LOOP.md) is a separate PPO experiment.
-It launches on episode start, not server startup. The learner/client has 18 passing offline tests;
-server syntax and native helper checks passed. Full server build and live integration remain pending.
+The [automatic learned-navigation loop](RL-EPISODE-OPERATIONS.md) is a separate PPO experiment.
+It launches on episode start, not server startup. [Parallel parties](PARALLEL-EPISODES.md) collect
+experience for one shared model. The current source passes 34 focused offline tests and C++ syntax
+checks; the parallel server rebuild and live verification remain pending.
+
+[Experiment history](wai-experiments-history.md) preserves decisions, observed runs, lessons and
+adjustments. Successful future training updates append sanitized summaries and commit only that
+history file locally. The updated controller must be restarted to load this recording hook.
 
 See [Training and debugging](TRAINING-AND-DEBUGGING.md) for the end-to-end flow,
 tool roles, model files, a real state-to-action JSON example, and commands.

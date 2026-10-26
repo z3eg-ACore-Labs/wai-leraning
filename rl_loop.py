@@ -20,6 +20,7 @@ from filelock import FileLock
 
 from live import Soap
 from exploration import VisitMemory, INPUTS, SETTINGS as EXPLORATION_SETTINGS
+from experiment_history import record_training
 
 SCHEMA = 1
 ARCHITECTURE = [INPUTS, 64, 64, 9]
@@ -145,6 +146,18 @@ def rollout(soap, model, version, first, lifetime_counts=None):
     return transitions, dict(state, exploration=memory.summary())
 
 
+def advantages_for(transitions):
+    values = [t['value'] for t in transitions]
+    advantages, advantage = [], 0.0
+    for i in reversed(range(len(transitions))):
+        terminal = transitions[i].get('done', i == len(transitions) - 1)
+        following = values[i + 1] if not terminal and i + 1 < len(values) else 0.0
+        delta = transitions[i]['reward'] + 0.99 * following - values[i]
+        advantage = delta + (0 if terminal else 0.99 * 0.95 * advantage)
+        advantages.append(advantage)
+    return torch.tensor(list(reversed(advantages)), dtype=torch.float32)
+
+
 def update(model, optimizer, transitions):
     if not transitions:
         raise ValueError('No policy transitions to train')
@@ -158,13 +171,7 @@ def update(model, optimizer, transitions):
         before_probabilities = model(states[sample], masks[sample])[0].probs.clone()
     old_log_probabilities = torch.tensor([t['log_probability'] for t in transitions])
     values = [t['value'] for t in transitions]
-    advantages, advantage = [], 0.0
-    for i in reversed(range(len(transitions))):
-        following = values[i + 1] if i + 1 < len(values) else 0.0
-        delta = transitions[i]['reward'] + 0.99 * following - values[i]
-        advantage = delta + 0.99 * 0.95 * advantage
-        advantages.append(advantage)
-    advantages = torch.tensor(list(reversed(advantages)), dtype=torch.float32)
+    advantages = advantages_for(transitions)
     returns = advantages + torch.tensor(values)
     if len(advantages) > 1:
         advantages = (advantages - advantages.mean()) / advantages.std(unbiased=False).clamp_min(1e-6)
@@ -206,7 +213,7 @@ def notify(soap, stage, episode, version):
         raise RuntimeError('Server did not acknowledge training stage')
 
 
-def run(args):
+def initialize(args):
     torch.set_num_threads(1)
     torch.manual_seed(args.seed)
     model = NavigationPolicy()
@@ -239,6 +246,14 @@ def run(args):
             print('Exploration inputs added; previous weights preserved, optimizer reset, backup saved.', flush=True)
     else:
         checkpoint(path, model, optimizer, version, last_episode)
+    return model, optimizer, path, version, last_episode, lifetime_counts
+
+
+def run(args):
+    if getattr(args, 'parties', 1) > 1:
+        from parallel_loop import run_parallel
+        return run_parallel(args)
+    model, optimizer, path, version, last_episode, lifetime_counts = initialize(args)
     soap = Soap(args.url, os.environ.get('WAI_SOAP_USER'), os.environ.get('WAI_SOAP_PASSWORD'), 'waiepisode ')
     writer = SummaryWriter(str(args.home / 'tensorboard'))
     try:
@@ -301,6 +316,7 @@ def run(args):
                 for name in ('unique_cells', 'entries', 'bonus'):
                     writer.add_scalar('exploration/' + name, terminal['exploration'][name], version)
                 writer.flush()
+                record_training(args.home, version, [(transitions, terminal)], explanation)
                 print(f'Episode complete; trained navigation checkpoint v{version}', flush=True)
                 runs += 1
             if args.episodes and runs >= args.episodes:
@@ -326,6 +342,8 @@ def main():
     parser.add_argument('--home', type=Path, default=Path('data/rl-navigation'))
     parser.add_argument('--url', default='http://127.0.0.1:7878/')
     parser.add_argument('--episodes', type=int, default=0, help='Zero repeats until explicitly stopped')
+    parser.add_argument('--parties', type=int, choices=range(1, 5), default=1,
+                        help='Concurrent parties sharing one model and a single checkpoint writer')
     parser.add_argument('--seed', type=int, default=17)
     parser.add_argument('--credentials', type=Path, help='Existing private voice-bridge credential JSON')
     args = parser.parse_args()

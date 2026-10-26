@@ -1,5 +1,9 @@
 # Automatic learned-navigation episodes
 
+**October 26 parallel update:** see [Parallel parties, one shared model](PARALLEL-EPISODES.md).
+`waiepisode start N` supports 1–4 concurrent parties feeding one shared PPO update per batch.
+This source change requires a server rebuild. Older single-party limitations below are historical.
+
 Updated October 25, 2026. Source is drafted in `rl_loop.py` and `mod-wai-episodes`.
 Offline validation passed on October 25: 18 learner/client tests, changed-source MSVC syntax,
 six native episode helper suites, and native process stop/start-cancel/pipe-flood/exit-status checks.
@@ -135,7 +139,8 @@ complete recording manifest. The six-line summary reports decisions used, run ou
 reward, L2 weight change and before/after action probabilities in one identical recorded state.
 It explicitly selects the largest sampled probability change from at most 128 states. It does not
 invent a neuron's meaning or claim that changing the policy improved performance. Including status
-receipts, successful training feedback stays under ten lines.
+receipts, single-party feedback stays under ten lines. Parallel batches retain extra per-party
+receipts but print the measured six-line model summary once.
 
 After clone login, server logs list all five names. At run start they print the current tank's GM
 appear command, invisibility/outdoor teleport steps, self-only unbind and instance comparison. These
@@ -211,4 +216,19 @@ step merely to reload code. Existing incomplete/unconsumed recordings still requ
 Offline verification: 24 focused tests pass, including loop pacing, distinct height cells,
 negative coordinates, teleport suppression, lifetime decay, reward cap, heading-relative memory,
 checkpoint migration and wipe-training repetition. Live exploration effectiveness is not verified.
-Parallel parties feeding one model remain pending; this change does not add parallel execution.
+The exploration change itself does not add parallel execution. The subsequent implementation is
+documented in `PARALLEL-EPISODES.md` and requires a compatible rebuilt server.
+
+
+## Experiment history and automatic local commits
+
+See `wai-experiments-history.md` for chronological decisions, measured runs and adjustments.
+After a successful checkpoint update, both serial and parallel controllers append a sanitized
+summary and commit only that Markdown file locally. No automatic push is performed.
+The updated controller must be restarted to load this hook. Code changes and offline results
+are also documented during implementation; runtime summaries never fabricate a causal lesson.
+Git/history failure does not invalidate the saved model: a private `history-pending/` receipt
+under the learner home is retried after later training. Check Git identity/permissions if these
+receipts accumulate. Automatic summaries exclude account/character linkage, raw episode IDs,
+credentials, private logs and machine paths. Existing staged implementation changes are preserved.
+The focused suite now has 34 passing tests, including isolated-Git behavior.
