@@ -190,3 +190,12 @@ without authorization. New implementation milestones are also recorded and commi
 
 Future controller-generated entries appear below. Public summaries exclude raw episode IDs,
 character/account linkage, private logs, credentials and machine-specific paths.
+
+## October 26 — implementation checkpoint and Git-operation safeguard
+
+The parallel server implementation is committed as `29ed056`; shared collection and history-hook
+implementation as `81555fc`; the initial curated history as `f8f3228`. These are source milestones,
+not evidence of live parallel execution. A subsequent safeguard defers automatic history commits
+during unresolved merges, cherry-picks or rebases, preserving a pending receipt instead of staging
+conflict markers. The focused suite now passes 35 tests. No new server build, restart or live
+parallel run was performed. The next required validation is a rebuilt server with two parties.
