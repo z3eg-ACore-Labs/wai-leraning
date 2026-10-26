@@ -3,7 +3,6 @@
 __pycache__/
 .pytest_cache/
 .wai-history.lock
-wai-experiments-history.md.tmp
 installed-requirements.txt
 *.jsonl
 /data/rl-navigation/
