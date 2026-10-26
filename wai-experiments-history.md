@@ -661,3 +661,7 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 
 Total training reward: -407.4261; weight-change L2: 0.046594.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+## October 26 — separate green human-facing WAI events
+
+The user requested green console messages for significant WAI events while keeping structured status/training JSON visually separate. Human-facing episode logs now use a dedicated event category; structured WAI_EPISODE messages retain their original category. The build publisher prepares a bright-green console appender and preserves inherited file appenders, snapshots the pre-change config, and avoids repeated duplicate declarations. No ANSI escapes are added to saved JSONL or file log text. Nine offline publisher tests passed after running outside the sandbox's hard-link restriction; tests operated only on temporary workspace fixtures. Changed C++ syntax, scoped style and formatting passed. No full server build, live config edit, server restart or live color check was performed. The next normal build/publication and restart activates the routing.
