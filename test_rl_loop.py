@@ -60,8 +60,9 @@ class PolicyTests(unittest.TestCase):
 
 class EpisodeTransport:
     """In-memory episode execution; never starts or contacts a game server."""
-    def __init__(self):
+    def __init__(self, outcome='completed_all_bosses'):
         self.commands = []
+        self.outcome = outcome
         self.index = 1
         self.finished = False
 
@@ -71,8 +72,9 @@ class EpisodeTransport:
             return json.dumps(dict(schema=1, episode=f'123-{self.index}', mode='cloned',
                 phase='finished' if self.finished else 'running', seq=2 if self.finished else 1,
                 features=[0.0] * 16, elapsed_ms=1000 if self.finished else 0,
-                bosses=4 if self.finished else 0, deaths=0,
-                outcome='completed_all_bosses' if self.finished else '', auto_repeat=True,
+                bosses=(4 if self.outcome == 'completed_all_bosses' else 1) if self.finished else 0,
+                deaths=5 if self.finished and self.outcome == 'wipe' else 0,
+                outcome=self.outcome if self.finished else '', auto_repeat=True,
                 action_result='wait'))
         if text.startswith('waiepisode act '):
             self.finished = True
@@ -89,6 +91,22 @@ class EpisodeTransport:
 
 
 class LoopTests(unittest.TestCase):
+    def test_wipe_trains_then_starts_fresh_episode(self):
+        transport = EpisodeTransport('wipe')
+        with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:
+            home = Path(temporary)
+            args = SimpleNamespace(home=home, seed=7, episodes=2, url='http://127.0.0.1:7878/')
+            with patch('rl_loop.Soap', return_value=transport), patch('rl_loop.time.sleep'):
+                run(args)
+            saved = torch.load(home / 'navigation.pt', weights_only=True)
+            self.assertEqual(saved['version'], 2)
+            trajectory = json.loads((home / 'episodes' / '123-1' / 'trajectory.json').read_text())
+            self.assertEqual(trajectory['terminal']['outcome'], 'wipe')
+            self.assertLess(trajectory['transitions'][-1]['reward'], 0)
+            completed = next(i for i, command in enumerate(transport.commands)
+                             if command.startswith('waiepisode training completed '))
+            self.assertLess(completed, transport.commands.index('waiepisode repeat'))
+
     def test_completed_run_trains_reports_then_repeats(self):
         transport = EpisodeTransport()
         with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:

@@ -1,7 +1,7 @@
 """Single-party learned navigation and automatic between-episode PPO updates.
 
 Offline-validated implementation; full server build and live integration remain pending.
-Launch explicitly once; no server thread launches Python or performs training.
+Launched on demand by episode start; all model execution and training run outside server threads.
 """
 import argparse
 import hashlib

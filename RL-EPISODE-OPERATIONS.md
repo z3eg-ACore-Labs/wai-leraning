@@ -57,9 +57,20 @@ The old human-character action lease is separate. This experiment adds episode-s
 identity, sequence, fixed policy version, decision freshness and heartbeat reject stale control.
 Movement executes on the map update; training and trajectory I/O are external.
 
-Initially only isolated cloned-party episodes are supported. Existing-party attach remains
-scripted-only. `Wai.Episodes.Policy = "scripted"` explicitly selects the old fixed-route baseline.
+Only isolated cloned-party episodes are supported by the learned loop. As of October 26,
+scripted policy configuration is rejected and episodes are disabled rather than following a fixed
+route. Missing learner configuration also rejects episode start; there is no scripted fallback.
 Policy/process settings are not changed mid-run by configuration reloads.
+
+A partial death uses a surviving party member for recovery. A full wipe ends that episode;
+the learner trains from the failed trajectory, saves the checkpoint, then requests a fresh party
+and instance. The October 26 offline regression exercises two consecutive wipes and checks that
+training completes before repeat. This is not yet a live-server verification.
+
+GM observation: `.appear` now rejects a conflicting personal dungeon binding. When moving between
+copies of the same dungeon, it requests a full instance transfer instead of a coordinate-only
+teleport. Leave the dungeon and clear only your GM's binding before retrying a rejected appear;
+never unbind the bot party. This C++ fix requires a new server build.
 
 ## What learns
 
