@@ -232,3 +232,5 @@ under the learner home is retried after later training. Check Git identity/permi
 receipts accumulate. Automatic summaries exclude account/character linkage, raw episode IDs,
 credentials, private logs and machine paths. Existing staged implementation changes are preserved.
 The focused suite now has 35 passing tests, including isolated-Git behavior.
+
+Observation timeout recovery: read-only episode observations retry timeouts up to three attempts (two-second socket timeout per attempt). Actions are never retried automatically. Persistent delays stop cycling and preserve the last saved checkpoint. Restart the controller to load this Python-only fix; no additional server rebuild is required for this fix. Offline validation: 36 focused tests pass; live delay recovery remains unverified.

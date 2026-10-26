@@ -8,9 +8,11 @@ import base64
 import json
 import math
 import os
+import re
 from pathlib import Path
 import time
 import urllib.parse
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape
@@ -39,8 +41,18 @@ class Soap:
             'Authorization': self.authorization, 'Content-Type': 'text/xml; charset=utf-8'})
         # No global proxy or redirect handler: credentials stay at the loopback endpoint.
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
-        with opener.open(request, timeout=2) as response:
-            body = response.read(65537)
+        # Only observations are safe to repeat after an uncertain response.
+        # Three two-second reads stay below the episode's 15-second heartbeat.
+        attempts = 3 if re.fullmatch(r'waiepisode (?:party [1-4] )?observe', text) else 1
+        for attempt in range(attempts):
+            try:
+                with opener.open(request, timeout=2) as response:
+                    body = response.read(65537)
+                break
+            except (TimeoutError, urllib.error.URLError) as error:
+                timed_out = isinstance(error, TimeoutError) or isinstance(error.reason, TimeoutError)
+                if not timed_out or attempt + 1 == attempts:
+                    raise
         if len(body) > 65536 or b'<!DOCTYPE' in body.upper() or b'<!ENTITY' in body.upper():
             raise ValueError('Invalid SOAP response')
         root = ET.fromstring(body)

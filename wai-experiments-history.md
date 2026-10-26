@@ -199,3 +199,18 @@ not evidence of live parallel execution. A subsequent safeguard defers automatic
 during unresolved merges, cherry-picks or rebases, preserving a pending receipt instead of staging
 conflict markers. The focused suite now passes 35 tests. No new server build, restart or live
 parallel run was performed. The next required validation is a rebuilt server with two parties.
+
+## October 26 — observation timeout interrupted an exploration run
+
+A user-reported run ended after approximately 19 minutes 37 seconds with zero bosses and one
+death: an observation SOAP read exceeded its two-second timeout and the controller exited.
+The exploration-input migration had succeeded beforehand, preserving previous weights and
+saving a backup while resetting optimizer state. This is an infrastructure interruption,
+not evidence that migration failed or that the model learned from the interrupted episode.
+
+Observation reads now retry timeouts up to three attempts, including party-specific reads.
+Each attempt retains the two-second timeout; movement and other mutating commands are never
+automatically retried because their execution may already have occurred. Authentication failures
+are not retried. Persistent delays still stop the controller. The underlying server delay has
+not been established. This Python-only fix needs a controller restart, not a server rebuild;
+live recovery from a delayed server remains unverified.

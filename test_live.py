@@ -1,11 +1,36 @@
 """Offline action selection/transport checks; no SOAP server is contacted."""
 import unittest
+import urllib.error
 from unittest.mock import Mock, patch
 
 from live import Soap, choose_action
 
 
 class ActionTests(unittest.TestCase):
+    def test_observation_timeouts_retry_but_actions_do_not(self):
+        client = Soap('http://127.0.0.1:7878/', 'operator', 'test-placeholder', 'waiepisode ')
+        response = Mock()
+        response.read.return_value = b'<Envelope><executeCommandResponse>ok</executeCommandResponse></Envelope>'
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        for command in ('waiepisode observe', 'waiepisode party 2 observe'):
+            opener = Mock()
+            opener.open.side_effect = [TimeoutError(), urllib.error.URLError(TimeoutError()), response]
+            with patch('urllib.request.build_opener', return_value=opener):
+                self.assertEqual(client.command(command), 'ok')
+            self.assertEqual(opener.open.call_count, 3)
+        for command in ('waiepisode act fixture 1 0 v5', 'waiepisode observe'):
+            opener = Mock()
+            opener.open.side_effect = TimeoutError()
+            with patch('urllib.request.build_opener', return_value=opener), self.assertRaises(TimeoutError):
+                client.command(command)
+            self.assertEqual(opener.open.call_count, 3 if command.endswith('observe') else 1)
+        opener = Mock()
+        opener.open.side_effect = urllib.error.HTTPError(client.url, 401, 'Unauthorized', {}, None)
+        with patch('urllib.request.build_opener', return_value=opener), self.assertRaises(urllib.error.HTTPError):
+            client.command('waiepisode observe')
+        self.assertEqual(opener.open.call_count, 1)
+
     def setUp(self):
         self.spells = [779, 5232, 5487, 6808, 8618, 16857]
         self.obs = {'busy': False, 'lootable': False, 'enemy': False, 'attacking': False,
