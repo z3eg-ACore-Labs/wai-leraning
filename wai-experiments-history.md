@@ -1,0 +1,192 @@
+# WAI experiments history
+
+Chronological record of the experiment, user decisions, observed results and resulting adjustments.
+Dates are stated only where supported by the conversation or inspected artifacts. Automated result
+entries use UTC. Source changes, offline validation and live behavior are separate evidence levels.
+Credentials, account linkage, machine-specific paths and raw private logs are deliberately excluded.
+
+## Initial direction — before the first learned dungeon episodes
+
+**Goal:** a party controller that can eventually complete unfamiliar dungeons, rather than a fixed
+script for one dungeon. The human demonstrates gameplay; later bots collect their own experience.
+Actions should represent abilities or intentions, not a fixed keyboard layout. Voice input is not
+part of the gameplay training signal.
+
+**First implementation:** server-side observations paired with requested actions and subsequent spell
+events. Pre-request state matters: recording only after handlers/cast checks risks pairing an action
+with information that became available after it. The recorder was made independent of any model so
+recorded human runs could be trained on later. Character selection should follow the active human
+character instead of requiring a GUID before startup. Recordings should have dungeon boundaries and
+recognizable dungeon names rather than one server-lifetime stream.
+
+**Tools and first model:** the earlier spell-imitation example is distinct from dungeon-navigation
+RL. It used a small 16→12→8→6 network and a human Maul example to explain normalized inputs, weights,
+ReLU, activations and spell probabilities. NumPy/PyTorch, TensorBoard and Netron have different roles;
+viewing network structure or changing weights does not by itself establish effective gameplay.
+
+**Lesson:** record state, action and outcome consistently; keep recordings usable without a model;
+measure held-out performance rather than treating training fit as proof of generalization.
+
+## Repeatable dungeon experiments — clone isolation and operational lessons
+
+The user chose Ragefire Chasm as the first controlled environment. Five configured characters are
+read-only templates: create distinct clones with the same level, talents and equipped gear, empty
+carried inventory, and XP locked. Never run the original templates or reuse their identities as the
+experimental party. All four required bosses must die for completion; deaths and elapsed time matter.
+
+The implementation reuses native character dump import/export, bot login, group, movement and
+recovery functionality. Separate parties need separate groups and dungeon instances. Clone accounts
+and ownership ledgers must be reusable across runs while protecting unrelated or online characters.
+
+Early failures included incompatible movement-map versions and overly strict movement checks that
+rejected apparently legitimate travel. Repeatedly repairing individual sampled path segments was
+not sustainable. The user explicitly chose an **unrestricted experiment** for now: leave strict
+movement integrity off, allow questionable geometry shortcuts, and observe whether any clear emerges.
+This is not evidence that movement is player-legal; constrained navigation is a later comparison.
+
+The deployment workflow also separated builds from the working server, used versioned executables
+and manifests, and reused runtime assets. Source updates and a selected executable filename do not
+prove which process is actually running. Inspect deployed configuration and episode policy receipts.
+
+GM observation exposed another distinction: matching coordinates is not the same as matching an
+instance. A source fix makes appear use a full transfer between copies and reject conflicting
+personal bindings. Observation instructions must use the current clone name and instance, because
+the next episode replaces the previous party. Live multi-party observation still needs validation.
+
+## October 25 — scripted baseline was not the intended learned route
+
+**Verified deployed run:** the inspected baseline explicitly reported scripted boss routing. It
+killed Oggleflint (one of four bosses), recovered three dead members, and eventually ended in a full
+wipe after approximately 24 minutes 26 seconds with eight recorded deaths. No learned controller or
+training updates were present for that run.
+
+**User correction:** the experiment should discover the route from run one, without a predefined
+boss order or destinations. The apparent partial success of native PlayerBots plus a script was not
+proof of a trained model. The source was changed to require learned navigation, reject scripted
+configuration and reject missing learner configuration rather than silently use a scripted fallback.
+
+**Recovery distinction:** partial deaths can recover through a surviving bot after combat. A full
+wipe is a terminal episode, not a recovery anchor. The intended learned loop trains from that failure
+and then creates a fresh episode. An offline regression subsequently verified that order.
+
+## October 26 — first verified learned run/training cycle
+
+The loop launches only when an administrator starts episodes, not on ordinary server startup.
+Model inference and training run outside server threads. Native PlayerBots handles combat and
+followers; the model chooses wait or one of eight short heading-relative movement goals. The server
+validates episode identity, sequence, policy version and decision freshness.
+
+An episode has a configurable 60-minute budget. Timeout is a gameplay failure that can train the
+model, then repeat. Continuous cycling remains active until stopped or an infrastructure/training
+failure halts it. Stopping mid-run retains the last saved checkpoint but does not train that
+unfinished run. Cleanup removes clones, not previous model updates or recording files.
+
+### Inspected completed updates
+
+These results were read from local saved trajectories, training receipts and summaries. Times below
+are UTC, corresponding to the overnight runs on October 26 in Toronto. Every row used the older
+16-input policy, without the later visited-area memory. Each row has a completed training receipt.
+
+| Recorded end (UTC) | Policy → checkpoint | Outcome | Bosses | Deaths | Seconds | Decisions | Total reward | Weight-change L2 |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| 2026-10-26 05:32:28 | v0 → v1 | Timeout | 0/4 | 2 | 3601.0 | 893 | -95.9080 | 0.942936 |
+| 2026-10-26 06:32:41 | v1 → v2 | Timeout | 0/4 | 0 | 3600.0 | 896 | -85.8975 | 0.565162 |
+| 2026-10-26 07:32:55 | v2 → v3 | Timeout | 0/4 | 0 | 3600.7 | 896 | -85.9069 | 0.478073 |
+| 2026-10-26 08:33:08 | v3 → v4 | Timeout | 0/4 | 1 | 3600.8 | 894 | -90.9076 | 0.445684 |
+| 2026-10-26 09:33:21 | v4 → v5 | Timeout | 0/4 | 0 | 3600.1 | 896 | -85.8989 | 0.364557 |
+
+**Finding:** recording, training, checkpoint saving and automatic repeat were functioning. All five
+completed runs killed zero bosses. We have not demonstrated useful route learning or successful
+completion. Decreasing weight-change magnitude is not evidence of better play.
+
+At a later inspected snapshot, a sixth episode was still running with five living online clones.
+That snapshot was not a completed result and is intentionally absent from the completed-update table.
+The history had not disappeared: event journals and training trajectories were configured in
+different folders. Automatic clone cleanup also makes previous bot names disappear while keeping
+their recordings. Future summaries should distinguish a live snapshot from a finalized outcome.
+
+## October 26 — feedback, gathering and exploration adjustments
+
+**User observation:** a warrior fought while nearby party members appeared idle. Logs supported
+some members being in combat while others were not, but did not establish the underlying assistance
+failure. Combat-assistance diagnosis remains open; it was not solved merely by adding exploration.
+
+**Looting/gathering:** episode setup had explicitly disabled these behaviors to avoid competing
+movement. That was too broad for the requested dungeon behavior. Source now enables native loot and
+gather on all party members during a run and yields navigation to active loot targets, pending loot
+operations and gathering casts. Native profession skills, tools and eligibility still apply. Empty
+clone inventory is retained; tools are not magically supplied. C++ checks passed; live behavior
+requires the corresponding build. Boss deaths also gained one uppercase headline per counted boss,
+using existing deduplication and retaining the structured training event.
+
+**Exploration limitation:** the original policy had no explicit visit memory and mostly delayed
+task rewards. PPO does not identify and delete detours. It can reinforce unnecessary wandering near
+a successful outcome; credit assignment is statistical, not knowledge of which turns were needed.
+Parallelism alone would collect more experience without fixing this information gap.
+
+**Implemented adjustment:** derive visit counts from the tank's reported XYZ coordinates in 8×8×4
+yard cells, append ten memory features to the original sixteen inputs, and add a small diminishing
+new-cell reward capped at two points per episode. Boss kills remain +10 and completion +1000;
+deaths cost five points and elapsed time costs 0.01 per second. Revisits do not keep paying. Large
+position jumps, wait actions, failed movement and death-associated movement earn no discovery bonus.
+Height bands are only a floor approximation, not a geometry map or wall validator.
+
+Episode visit memory resets each run; lifetime counts persist in the checkpoint and reduce repeat
+discovery bonuses. Older checkpoints are backed up and migrated: learned weights are retained, new
+input connections begin at zero, and optimizer state resets for the changed tensor dimensions.
+An offline regression verifies unchanged predictions immediately after migration. Twenty-four
+focused tests passed at this milestone. An already running controller does not hot-reload this code.
+Live exploration improvement remains unverified; no clear-rate gain is claimed.
+
+## October 26 — parallel parties sharing one model
+
+The user explicitly selected **one shared model**, not separate models per party, and requested
+`waiepisode start N` with N representing party count.
+
+**Implemented source:** one to four independently scoped party runtimes, groups, instances, queues,
+recovery and journals. Each runtime clones the same read-only templates. Secondary dedicated
+accounts are created on demand through the existing account API when requested; existing account
+and ownership safeguards remain. `watch N` prints a party's current GM observation instructions.
+Stop, cleanup and status apply to the selected pool.
+
+One external process collects concurrently with frozen weights, waits for all parties to finish,
+then performs one shared PPO update and checkpoint write. Early finishers wait for the slowest party.
+Terminal boundaries stop advantage/reward propagation between parties. Per-episode visit memory
+stays independent; lifetime-count increments merge after collection. Training or infrastructure
+failure stops the batch and keeps the last checkpoint. Per-party artifacts and a shared batch
+manifest preserve what contributed to each update. Strict movement integrity remains off as requested.
+
+**Validation:** 31 focused offline tests passed before the history feature, including concurrent
+collection, two shared batches, four parties resuming checkpoint version five, separate files,
+advantage boundaries, count merging and failed-update preservation. All four C++ runtime
+instantiations passed syntax checks and scoped style. No full build or live multi-party episode was
+run during implementation. See `PARALLEL-EPISODES.md` for operation and remaining live checks.
+
+## Related environment change — guaranteed boss loot
+
+The separate, user-authorized loot patch was backed up, rehearsed transactionally with rollback,
+applied and verified: 802 creature variants, 86 chest templates and 20,674 copied loot rows at 100%.
+Matching server overflow-mail support is required; normal difficulty/quest/class/faction conditions
+remain. Live kill/mail behavior has not been verified. Loot distribution can affect the experimental
+environment, so it should be considered when comparing later runs. It is not model learning.
+
+## Ongoing recording policy
+
+The history-recording feature passed three additional isolated-Git tests, bringing the focused suite
+to 34 tests. They verify history-only commits with unrelated staged work preserved, sanitized and
+deduplicated retries, and retained pending receipts without altering a model after a Git failure.
+
+Record material decisions, implementation changes, validation results, deployment changes, observed
+outcomes and resulting lessons in this file. Preserve uncertainty and failed attempts. Do not turn
+unverified user observations into measured results, or synthetic tests into live-game evidence.
+
+After each successful future training update, the controller appends a sanitized result and commits
+only this Markdown file locally. History/Git failures retain a private pending receipt for retry
+without discarding a saved model or stopping training. This begins on the updated controller's next
+launch; an existing old process will not acquire the hook automatically. Nothing is pushed upstream
+without authorization. New implementation milestones are also recorded and committed during work.
+
+## Automated training updates
+
+Future controller-generated entries appear below. Public summaries exclude raw episode IDs,
+character/account linkage, private logs, credentials and machine-specific paths.
