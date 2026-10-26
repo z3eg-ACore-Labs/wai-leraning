@@ -341,3 +341,14 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 The user requested priority corpse cleanup after combat and made a CraftTrail dropdown fix the higher priority. Investigation found no installed CraftTrail source in the workspace, only an older preview ZIP containing InkTrail; the active addon path was requested rather than patching an unverified version. CraftTrail remains pending that path.
 
 Independent server work extends the existing Corpse Explosion strategy to non-combat defaults and removes the live-enemy requirement once out of combat. Learned spell, cooldown, runic power, eligible corpse, range and line-of-sight checks remain. Corpses can be cleared after the last enemy dies, but resource/target constraints can prevent a cast. Changed-source C++ syntax, full module codestyle and clang-format checks passed. No full build, server start or live combat test was performed; rebuild/restart required. Existing unrelated work remains preserved and upstream synchronization remains unverified from the earlier failed fetch.
+
+<!-- wai-training:5221a825ccec72b133d58968d8a4289cdaba5b4418cc0d4823e8b6bdd0c1721d -->
+### 2026-10-26 16:55:34 UTC — checkpoint v12
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 82.3 | 18 | 26 | 7 | 0.057 |
+| 2 | wandering_off_limits | 0/4 | 0 | 22.1 | 3 | 26 | 2 | 0.008 |
+
+Total training reward: -200.7733; weight-change L2: 0.061790.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
