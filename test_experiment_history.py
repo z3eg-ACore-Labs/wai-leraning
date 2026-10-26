@@ -62,6 +62,23 @@ class HistoryTests(unittest.TestCase):
         self.assertFalse(list((self.home / 'history-pending').glob('*.json')))
         self.assertEqual((self.repository / HISTORY).read_text(encoding='utf-8').count('checkpoint v1'), 1)
 
+    def test_unresolved_merge_is_left_untouched_with_pending_receipt(self):
+        branch = git(self.repository, 'branch', '--show-current')
+        git(self.repository, 'checkout', '-q', '-b', 'fixture-change')
+        readme = self.repository / 'README.md'
+        readme.write_text('branch edit\n')
+        git(self.repository, 'commit', '-am', 'Branch fixture change')
+        git(self.repository, 'checkout', '-q', branch)
+        readme.write_text('main edit\n')
+        git(self.repository, 'commit', '-am', 'Main fixture change')
+        with self.assertRaises(RuntimeError):
+            git(self.repository, 'merge', 'fixture-change')
+        content = readme.read_bytes()
+        self.assertFalse(record_training(self.home, 1, self.results, self.summary, self.repository))
+        self.assertEqual(readme.read_bytes(), content)
+        self.assertFalse((self.repository / HISTORY).exists())
+        self.assertTrue(list((self.home / 'history-pending').glob('*.json')))
+
 
 if __name__ == '__main__':
     unittest.main()

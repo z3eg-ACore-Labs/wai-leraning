@@ -64,6 +64,11 @@ def render(entry):
 
 
 def append_and_commit(repository, entries):
+    if git(repository, 'diff', '--name-only', '--diff-filter=U'):
+        raise RuntimeError('History waits for unresolved Git conflicts')
+    for operation in ('MERGE_HEAD', 'CHERRY_PICK_HEAD', 'rebase-merge', 'rebase-apply'):
+        if (repository / git(repository, 'rev-parse', '--git-path', operation)).exists():
+            raise RuntimeError('History waits for the current Git operation')
     history = repository / HISTORY
     content = history.read_text(encoding='utf-8') if history.exists() else '# WAI experiments history\n'
     for entry in entries:

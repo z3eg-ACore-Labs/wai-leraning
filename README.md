@@ -2,7 +2,7 @@
 
 The [automatic learned-navigation loop](RL-EPISODE-OPERATIONS.md) is a separate PPO experiment.
 It launches on episode start, not server startup. [Parallel parties](PARALLEL-EPISODES.md) collect
-experience for one shared model. The current source passes 34 focused offline tests and C++ syntax
+experience for one shared model. The current source passes 35 focused offline tests and C++ syntax
 checks; the parallel server rebuild and live verification remain pending.
 
 [Experiment history](wai-experiments-history.md) preserves decisions, observed runs, lessons and

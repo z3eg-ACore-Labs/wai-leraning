@@ -231,4 +231,4 @@ Git/history failure does not invalidate the saved model: a private `history-pend
 under the learner home is retried after later training. Check Git identity/permissions if these
 receipts accumulate. Automatic summaries exclude account/character linkage, raw episode IDs,
 credentials, private logs and machine paths. Existing staged implementation changes are preserved.
-The focused suite now has 34 passing tests, including isolated-Git behavior.
+The focused suite now has 35 passing tests, including isolated-Git behavior.
