@@ -296,3 +296,14 @@ Module implementation committed as 6098446; learner/reward/tests/operations guid
 
 Total training reward: -204.4919; weight-change L2: 0.104242.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+<!-- wai-training:60b97b68010dd8d6f8d6f95709c95b0b5b4057c153c833f1ab931a1d18f3ad1c -->
+### 2026-10-26 16:33:35 UTC — checkpoint v9
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | wandering_off_limits | 0/4 | 0 | 26.1 | 4 | 26 | 4 | 0.042 |
+| 2 | wandering_off_limits | 0/4 | 0 | 258.9 | 62 | 26 | 20 | 0.150 |
+
+Total training reward: -202.4573; weight-change L2: 0.159471.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
