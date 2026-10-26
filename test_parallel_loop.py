@@ -44,6 +44,19 @@ class PoolTransport:
 
 
 class ParallelTests(unittest.TestCase):
+    def test_escape_and_success_share_one_update_and_both_get_summaries(self):
+        transport = PoolTransport(('wandering_off_limits', 'completed_all_bosses'))
+        with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:
+            home = Path(temporary)
+            args = SimpleNamespace(home=home, seed=11, episodes=1, parties=2, url='http://127.0.0.1:7878/')
+            with patch('parallel_loop.Soap', return_value=transport), patch('parallel_loop.time.sleep'), \
+                    patch('rl_loop.time.sleep'):
+                run_parallel(args)
+            self.assertEqual(torch.load(home / 'navigation.pt', weights_only=True)['version'], 1)
+            for slot in (1, 2):
+                self.assertTrue(any(c.startswith(f'waiepisode party {slot} training report ')
+                                    for c in transport.commands))
+
     def setUp(self):
         history = patch('parallel_loop.record_training')
         self.history = history.start()

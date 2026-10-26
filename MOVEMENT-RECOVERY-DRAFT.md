@@ -1,5 +1,8 @@
 # Recoverable movement violations — design draft
 
+Superseded by the user's later terminate/train/restart decision. See BOUNDARY-EPISODES.md for the
+implemented tolerant monitor and its limitations. The recovery behavior below was not implemented.
+
 Status: proposed, not implemented or deployed. No server or build started for this draft.
 
 ## Goal and evidence

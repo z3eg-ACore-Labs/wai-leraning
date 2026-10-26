@@ -13,6 +13,12 @@ from exploration import INPUTS
 
 
 class RewardTests(unittest.TestCase):
+    def test_off_limits_has_terminal_penalty_without_erasing_progress_rewards(self):
+        before = dict(bosses=0, deaths=0, elapsed_ms=0)
+        after = dict(bosses=1, deaths=0, elapsed_ms=1000, phase='finished', outcome='wandering_off_limits')
+        self.assertAlmostEqual(reward(before, after), -90.01)
+        self.assertLess(reward(before, after), reward(before, dict(after, outcome='timeout')))
+
     def test_success_dominates_early_failure(self):
         initial = dict(bosses=0, deaths=0, elapsed_ms=0)
         success = dict(bosses=4, deaths=0, elapsed_ms=3600000,
@@ -96,6 +102,22 @@ class LoopTests(unittest.TestCase):
         history = patch('rl_loop.record_training')
         self.history = history.start()
         self.addCleanup(history.stop)
+
+    def test_off_limits_trains_before_restarting_and_preserves_checkpoint(self):
+        transport = EpisodeTransport('wandering_off_limits')
+        with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:
+            home = Path(temporary)
+            args = SimpleNamespace(home=home, seed=7, episodes=2, url='http://127.0.0.1:7878/')
+            with patch('rl_loop.Soap', return_value=transport), patch('rl_loop.time.sleep'):
+                run(args)
+            self.assertEqual(torch.load(home / 'navigation.pt', weights_only=True)['version'], 2)
+            trajectory = json.loads((home / 'episodes' / '123-1' / 'trajectory.json').read_text())
+            self.assertEqual(trajectory['terminal']['outcome'], 'wandering_off_limits')
+            self.assertEqual(trajectory['transitions'][-1]['exploration_bonus'], 0)
+            self.assertLess(trajectory['transitions'][-1]['reward'], -80)
+            completed = next(i for i, c in enumerate(transport.commands)
+                             if c.startswith('waiepisode training completed '))
+            self.assertLess(completed, transport.commands.index('waiepisode repeat'))
 
     def test_legacy_checkpoint_preserves_predictions_and_saves_backup(self):
         with TemporaryDirectory(dir=Path(__file__).resolve().parent.parent / 'output') as temporary:

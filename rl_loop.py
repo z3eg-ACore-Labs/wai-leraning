@@ -25,7 +25,7 @@ from experiment_history import record_training
 SCHEMA = 1
 ARCHITECTURE = [INPUTS, 64, 64, 9]
 LEGACY_ARCHITECTURE = [16, 64, 64, 9]
-GAMEPLAY_OUTCOMES = {'completed_all_bosses', 'wipe', 'timeout', 'member_left_instance'}
+GAMEPLAY_OUTCOMES = {'completed_all_bosses', 'wipe', 'timeout', 'member_left_instance', 'wandering_off_limits'}
 
 
 class NavigationPolicy(nn.Module):
@@ -61,7 +61,7 @@ def checkpoint(path, model, optimizer, version, episode, trajectory_sha256='', e
                 'trajectory_sha256': trajectory_sha256,
                 'gamma': 0.99, 'gae_lambda': 0.95, 'clip': 0.2, 'epochs': 4,
                 'reward': {'completion': 1000, 'boss': 10, 'death': -5,
-                           'second': -0.01, 'failure': -50, 'version': 2},
+                           'second': -0.01, 'failure': -50, 'off_limits': -100, 'version': 3},
                 'exploration': EXPLORATION_SETTINGS,
                 'exploration_counts': exploration_counts or {}}
     # Let Python open Windows paths, including paths unsupported by the native archive writer.
@@ -91,7 +91,8 @@ def reward(before, after):
     value = 10 * (after['bosses'] - before['bosses']) - 5 * (after['deaths'] - before['deaths'])
     value -= 0.01 * max(0, after['elapsed_ms'] - before['elapsed_ms']) / 1000
     if after['phase'] == 'finished':
-        value += 1000 if after['outcome'] == 'completed_all_bosses' else -50
+        value += (1000 if after['outcome'] == 'completed_all_bosses' else
+                  -100 if after['outcome'] == 'wandering_off_limits' else -50)
     return value
 
 
@@ -129,7 +130,8 @@ def rollout(soap, model, version, first, lifetime_counts=None):
         bonus = 0.0
         if len(following['features']) == 16:
             bonus = memory.enter(following['features'], state['features'],
-                                 eligible=following['deaths'] == state['deaths'] and action.item() != 0 and
+                                 eligible=following.get('outcome') != 'wandering_off_limits' and
+                                 following['deaths'] == state['deaths'] and action.item() != 0 and
                                  following.get('action_result') == 'movement_started')
         environmental_reward = reward(state, following)
         transitions.append({'state': inputs, 'mask': mask, 'action': action.item(),

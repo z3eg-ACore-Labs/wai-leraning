@@ -234,3 +234,7 @@ credentials, private logs and machine paths. Existing staged implementation chan
 The focused suite now has 35 passing tests, including isolated-Git behavior.
 
 Observation timeout recovery: read-only episode observations retry timeouts up to three attempts (two-second socket timeout per attempt). Actions are never retried automatically. Persistent delays stop cycling and preserve the last saved checkpoint. Restart the controller to load this Python-only fix; no additional server rebuild is required for this fix. Offline validation: 36 focused tests pass; live delay recovery remains unverified.
+
+Tolerant boundary termination, rewards, uppercase result summaries and activation are documented in
+[BOUNDARY-EPISODES.md](BOUNDARY-EPISODES.md). This is a C++ and Python change requiring a server rebuild
+and a new controller launch; it supersedes the earlier recover-and-continue draft.

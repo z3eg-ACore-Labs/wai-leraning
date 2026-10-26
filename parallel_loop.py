@@ -126,9 +126,10 @@ def run_parallel(args):
             atomic_json(batch_directory / 'summary.json', summary)
             report = [summary[key] for key in ('samples', 'return', 'weight_delta', 'action',
                       'probability_before', 'probability_after', 'health', 'combat')]
-            command = f'waiepisode training report {results[0][1]["episode"]} v{version} ' + ' '.join(map(str, report))
-            if clients[0].command(command) != 'WAI_TRAINING_REPORT_RECORDED':
-                raise RuntimeError('Shared checkpoint saved but server summary rejected; cycling stopped')
+            for client, (_, terminal) in zip(clients, results):
+                command = f'waiepisode training report {terminal["episode"]} v{version} ' + ' '.join(map(str, report))
+                if client.command(command) != 'WAI_TRAINING_REPORT_RECORDED':
+                    raise RuntimeError('Shared checkpoint saved but server summary rejected; cycling stopped')
             for key, number in metrics.items():
                 writer.add_scalar('train/' + key, number, version)
             writer.add_scalar('batch/parties', len(clients), version)

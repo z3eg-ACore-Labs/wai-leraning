@@ -11,7 +11,7 @@ from filelock import FileLock
 
 REPOSITORY = Path(__file__).resolve().parent
 HISTORY = 'wai-experiments-history.md'
-OUTCOMES = {'completed_all_bosses', 'wipe', 'timeout', 'member_left_instance'}
+OUTCOMES = {'completed_all_bosses', 'wipe', 'timeout', 'member_left_instance', 'wandering_off_limits'}
 
 
 def git(repository, *arguments):
