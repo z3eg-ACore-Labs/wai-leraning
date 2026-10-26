@@ -227,3 +227,13 @@ The user also reported requesting two parties but seeing only the first. The lat
 recording contains only party-one creation/start receipts; that corroborates missing evidence of a
 second start, not its cause. The latest build log reports successful parallel-capable publication.
 Current live pool status and second-party setup errors are still needed to establish what happened.
+
+<!-- wai-training:720c4c9c1a718ef5390e5ac50495b11e4149e94cc179dfa75632f3eb85933f6f -->
+### 2026-10-26 12:22:37 UTC — checkpoint v6
+
+| Party | Outcome | Bosses | Deaths | Seconds | Decisions | Inputs | Visited cells | Exploration bonus |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | timeout | 0/4 | 0 | 3600.2 | 895 | 26 | 222 | 2.000 |
+
+Total training reward: -83.9017; weight-change L2: 0.481899.
+Checkpoint saved and training completed. Weight changes alone do not establish improved play.
