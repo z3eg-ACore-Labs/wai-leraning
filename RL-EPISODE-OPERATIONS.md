@@ -158,3 +158,16 @@ Episode and PlayerBots style checks passed. Scoped checks passed for changed cor
 core linter still reports pre-existing violations in unrelated files. Upstream PlayerBots fetch failed
 in the environment, so synchronization remains unverified. Full server linking, actual SOAP/server
 integration, game recovery and end-to-end live training are the next checks after the user's build.
+
+
+## October 26: native looting and boss notifications
+
+Running learned episodes enable native loot and gather strategies on every party member.
+Preparation still holds the party stationary until entry; running setup restores those strategies.
+Navigation yields to open loot, pending loot operations, valid selected loot/gather targets, and
+non-melee casts. Native retry deferrals are respected. This changes bot settings, not model weights.
+Skinning still requires the normal skill, tools and eligible corpse. Clone inventory remains empty
+as requested; profession tools are not automatically supplied.
+Boss deaths print one WAI_BOSS_KILLED uppercase headline per boss per episode, with progress,
+elapsed seconds and death count. The structured boss_kill training record is retained.
+Changed-source MSVC syntax and scoped style pass. Rebuild and live verification remain pending.
