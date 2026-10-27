@@ -1130,3 +1130,17 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
   environment validation are recommended before further long training batches.
 - Full scope, caveats and proposed measurements: NAVIGATION-PROGRESS-REVIEW.md. No model weights,
   configuration or running server were changed; deployed checkpoint tensors were not inspected.
+
+### 2026-10-27 - Plan: full-client control plus validated headless execution
+
+- User wants a model that can control the logged-in playable character, with a lightweight
+  headless option for training, and no predefined dungeon route or hidden boss coordinates.
+- Research distinguishes protocol-only clients from actual movement/collision engines. Agent-wow
+  is a reusable session/module candidate, not an automatic physics fix; current movement includes
+  permissive fallback paths that can explain clipping but were not traced to every observed escape.
+- Drafted CLIENT-HEADLESS-TRANSITION-PLAN.md: common state/action contract, one full-client reference,
+  paired wall/ramp/floor/door/stop fixtures, headless parity, then party integration and learning.
+- A full-client tank alone cannot validate server-controlled followers. The plan explicitly requires
+  validated movement for every party member before calling whole-party behavior physically valid.
+- Reuse episode management, recordings and training tools. No implementation, installs, server/client
+  launches, build, model update or running-episode stop occurred during this planning work.
