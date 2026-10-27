@@ -1071,3 +1071,17 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
   Postmaster mail bypasses that gate; storage can already exceed the visible batch. Count caching
   and expiry are separate concerns. Uncapped storage/refresh remains a proposed source change,
   not implemented by this investigation. No mail changed and no build/server started.
+
+### 2026-10-26 — Transmog upstream update pulled
+
+- User requested an upstream check, then authorized pulling the installed transmog module forward.
+- Fetched the configured official remote and fast-forwarded six commits, from f07686b to 327753a.
+  The module checkout is clean and matches the fetched upstream master.
+- Updates include inventory/bank appearance backfill, module_string migration, optional set-bonus
+  disclaimer, GM diagnostics, bag appearance claiming and missing command messages.
+- All three changed C++ implementation files pass syntax checks against the current core.
+  The core updater discovers the module's db-world directory; workspace world config enables updates.
+- No full build, database update or server start was performed. Normal rebuild/publication plus restart
+  is still required; the actual runtime config must keep world database updates enabled.
+- New appearance claiming binds claimed items and removes refundable state; the tradeable setting
+  controls clearing BoP trade flags. Distribute desired gear before explicitly claiming appearances.
