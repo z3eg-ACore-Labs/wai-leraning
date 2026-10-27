@@ -1118,3 +1118,15 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 - Updated production-function fixture passes for single-spec/unallocated characters, alternative
   healer profiles, main-tree exclusion, main-spec priority and owned-spare suppression.
 - No server build/start, live trade or model training was performed for this correction.
+
+### 2026-10-27 - Evidence review: updates without demonstrated dungeon progress
+
+- Reviewed recorded checkpoints through v66: v6-v66 summaries contain 186 party-runs,
+  zero boss kills, 184 off-limits endings and two timeouts, about 13.61 aggregate party-hours.
+- Initial five older-policy runs also had zero boss kills. Earlier scripted boss kills do not
+  establish learned navigation progress. Weight updates are operational, not performance evidence.
+- Current observations lack local geometry/boundary distances; novelty reward diminishes across
+  runs. These are plausible limitations, not proven causes. Controlled baseline evaluation and
+  environment validation are recommended before further long training batches.
+- Full scope, caveats and proposed measurements: NAVIGATION-PROGRESS-REVIEW.md. No model weights,
+  configuration or running server were changed; deployed checkpoint tensors were not inspected.
