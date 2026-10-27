@@ -1054,3 +1054,20 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
   was needed. Upstream fetch failed in the local SSH runtime; synchronization remains unverified.
 - No full build, database script execution, server restart or live acquisition test performed.
   Off-spec best is still a separate pending feature.
+
+### 2026-10-26 — Epic-only loot preparation and mailbox-capacity investigation
+
+- User found all-quality guaranteed boss loot excessive and requested guaranteed epics only, with
+  other qualities restored to normal. Prepared a reversible database transition from the saved
+  original audit, applied-patch manifest and read-only item-quality data. No database writes made.
+- Mixed groups require retaining the ordinary roll before adding epic bonuses; simply changing
+  quality-row chances would alter rare odds. Generator preserves normal non-epic rows/groups/counts.
+  It assumes reference/group amount multipliers of one, matching the workspace configuration.
+- Twelve offline tests pass. SQL, both undo policies, private manifest and operator prerequisites
+  are saved separately from the original patch. A live transactional rehearsal is still pending.
+- Shared world-drop epics remain in scope: the largest epic pool has 174 types. Native non-equipment/
+  quest duplicate rules can allow a normal epic copy plus its bonus; this is documented for review.
+- Mail source inspection found a 50-message response batch and roughly 100-message player-send gate.
+  Postmaster mail bypasses that gate; storage can already exceed the visible batch. Count caching
+  and expiry are separate concerns. Uncapped storage/refresh remains a proposed source change,
+  not implemented by this investigation. No mail changed and no build/server started.
