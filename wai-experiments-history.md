@@ -1107,3 +1107,14 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 - No server build/start, live character creation, UI login, trade, database migration or model
   training ran during this work. Existing models/recordings remain untouched. Rebuild/publish and
   live checks are next; first-use watch still requires password entry and login-field calibration.
+
+### 2026-10-27 — Remove secondary-spec prerequisite
+
+- User corrected the off-spec policy: grade all possible class off-spec profiles, without
+  requiring an allocated secondary talent build. The saved-build prerequisite was removed.
+- After main-spec comparisons fail, every alternative class tree is evaluated; current main
+  tree is excluded using the existing spec detector. Druid cat/bear are separate profiles.
+- Existing spare-gear baselines, explicit off-spec requests, binding and guarded trade remain.
+- Updated production-function fixture passes for single-spec/unallocated characters, alternative
+  healer profiles, main-tree exclusion, main-spec priority and owned-spare suppression.
+- No server build/start, live trade or model training was performed for this correction.
