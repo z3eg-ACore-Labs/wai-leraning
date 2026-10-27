@@ -1039,3 +1039,18 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
   source implementation and live creation must be described separately.
 - Next: user rebuild/restart and first-use UI verification. Off-spec best fallback remains the next
   feature, including explicit off-spec upgrade requests and existing trade initiation behavior.
+
+### 2026-10-26 — Upgrade requests include mailbox collection and other receipts
+
+- User observed that taking equipment from mail did not notify bots and required manual best queries.
+- Added existing native receipt hooks for mail, inventory transfers, new-item storage, quest rewards
+  and vendor equip. Loot, rolls and crafting now feed the same deferred coalescing path.
+- Final inventory ownership is rechecked; overlapping hooks produce one evaluation. Ordinary bag/bank
+  rearrangements and buybacks stay excluded. Bound-item restrictions and normal trade safeguards remain.
+- Crafted bot upgrades can now initiate trade under the same safeguards as other sources. Non-loot
+  player alerts use received wording and ship translations for all nine supported locales.
+- Validation: changed C++ syntax checks and full module style checks pass. The standalone syntax
+  harness needed the configured MySQL include path for the registration source; no source workaround
+  was needed. Upstream fetch failed in the local SSH runtime; synchronization remains unverified.
+- No full build, database script execution, server restart or live acquisition test performed.
+  Off-spec best is still a separate pending feature.
