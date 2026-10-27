@@ -1022,3 +1022,20 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 
 Total training reward: -414.6030; weight-change L2: 0.070895.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
+
+### 2026-10-26 — One-command observer clients: implementation and first-use setup
+
+- User requested four tiled observer clients, one per concurrent party, using separate level-80
+  undead mage characters. Existing accounts were created by the user; this change does not change
+  their passwords. Character creation is deferred until the rebuilt server receives `waiepisode watch`.
+- Added queued world-thread setup and the local Windows launcher. Existing `watch N` instructions
+  and trainer observations remain unchanged. Observers stay outside the training parties and
+  enter the current tank's exact instance, with their own RFC binding replaced as needed.
+- Login uses a first-use encrypted password dialog and explicit field calibration, then reuses that
+  setup. Per-character focus checks and bounded login/teleport waits stop failed launches.
+- Publisher fixture tests, source syntax/style and PowerShell input-layout checks pass. No server
+  build, live character creation, client launch or end-to-end observation was run by the agent.
+- Lesson: saved installation paths should be checked before asking the user to repeat them;
+  source implementation and live creation must be described separately.
+- Next: user rebuild/restart and first-use UI verification. Off-spec best fallback remains the next
+  feature, including explicit off-spec upgrade requests and existing trade initiation behavior.
