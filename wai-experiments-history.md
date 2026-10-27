@@ -1144,3 +1144,29 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
   validated movement for every party member before calling whole-party behavior physically valid.
 - Reuse episode management, recordings and training tools. No implementation, installs, server/client
   launches, build, model update or running-episode stop occurred during this planning work.
+
+### 2026-10-27 - Same-account client sessions before shared client/AI control
+
+- User paused the client-input prototype and requested real clients on one account,
+  each selecting a different character. Same-character login should replace only
+  that character's previous real client, with no duplicate player load.
+- Reused the existing CharactersPerRealm limit (normally ten); removed the proposed
+  separate setting after user feedback. One additional selection-screen connection
+  permits takeover at capacity without adding another in-world character.
+- Core a5c126eea and PlayerBots f2a82387 (including acd5ffd7) add account session multiplicity, atomic
+  character reservations/handoff, per-character logout, connection/time accounting,
+  sibling permissions/flags/mutes/bans and master-character identity in bot callbacks.
+- Native isolated tests exercise actual lookup/claim methods, concurrent claims, stale
+  teardown and connection ledger deltas. MSVC syntax, scoped core codestyle and full
+  PlayerBots codestyle pass. No server build/link/start, live clients, database mutation,
+  training, recordings or checkpoint changes. Existing unrelated source edits remain.
+- Cluster/CAIS retain legacy single login. Authentication remains unchanged; sequential
+  logins are the first live check, not proof of simultaneous-authentication key handling.
+- Desired next layer: five visible clients, AI gameplay plus human bag/talent/chat/trade
+  access. Session support alone does not implement trade arbitration or talent ownership,
+  and does not impose client collision on server-issued movement. Prototype stays paused.
+- Final review also retained deferred bot logins until ownership attachment completes:
+  master disconnect, missing manager and queue refusal now request teardown instead of
+  orphaning a loaded session. The production-operation fixture covers sibling ownership,
+  missing/wrong-account masters, missing managers and intentional random-bot login.
+- PlayerBots upstream fetch failed earlier; upstream synchronization remains unverified.
