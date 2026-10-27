@@ -1085,3 +1085,25 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
   is still required; the actual runtime config must keep world database updates enabled.
 - New appearance claiming binds claimed items and removes refundable state; the tradeable setting
   controls clearing BoP trade flags. Distribute desired gear before explicitly claiming appearances.
+
+### 2026-10-27 — Off-spec recipients and independent party observers
+
+- User put weapon sheath-position customization on hold and requested finishing best off-spec
+  requests and the RL-party watcher. No sheath changes were made.
+- PlayerBots commit `735dfd6e` adds off-spec fallback only after the entire eligible main-spec
+  comparison finds nobody. It reads the saved inactive dual-spec build without activating it,
+  compares equipped/carried/banked alternatives, and explicitly identifies off-spec requests.
+- Automatic acquisitions reuse the existing guarded trade initiation and never auto-accept.
+  Single-spec/unallocated/ambiguous builds are skipped instead of guessing an intended off-spec.
+  Feral considers cat and bear; alternate loadout/paired-slot scoring remains conservative.
+- Episode commit `0b79e81` fixes watch so an unready party or failed observer no longer blocks
+  other ready parties. Original slot identities preserve quadrant assignment. READY now checks
+  exact map object, GM mode, invisibility, matching phase and completed teleport.
+- Actual production recipient functions pass a native offline state-double fixture, including
+  main-spec priority, bank spares, incoming-item ownership and inactive talent masks. The actual
+  watcher loop passes a mocked failure-isolation test without clients, input or network calls.
+- C++ syntax, changed-source formatting/core style, PowerShell parsing and module codestyle pass.
+  Upstream PlayerBots synchronization remains unverified because the fetch failed before connection.
+- No server build/start, live character creation, UI login, trade, database migration or model
+  training ran during this work. Existing models/recordings remain untouched. Rebuild/publish and
+  live checks are next; first-use watch still requires password entry and login-field calibration.
