@@ -1170,3 +1170,38 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
   orphaning a loaded session. The production-operation fixture covers sibling ownership,
   missing/wrong-account masters, missing managers and intentional random-bot login.
 - PlayerBots upstream fetch failed earlier; upstream synchronization remains unverified.
+
+
+## 2026-10-28 - Isolated client party control and one-handed appearances
+
+PlayerBots commit `7fc49cb3` (base `f2a82387`) implements `.bot leader`, party/raid
+`bot leader`, and `.bot client on/follow NAME/manual/auto/off/status`. The party
+leader becomes the actual master, resolving the SelfBot follow/stay ownership
+mismatch. Same-account clients can acquire AI; other-account humans must opt in.
+Existing SelfBotLevel restrictions remain. The requesting leader's AI is paused.
+Manual movement/casting yields AI; talent allocation remains human-controlled.
+Trading pauses automatic AI and resumes afterward unless manual mode was selected.
+Paused AI orders are discarded; resend orders after trades when needed.
+
+Transmog commit `f71ddc6` (base `327753a`) defaults all one-handed melee appearance
+pairs on: axes, swords, maces, daggers and fists across generic/main/off-hand types.
+Source-weapon proficiency is bypassed for these looks; other eligibility rules
+remain. No added two-handed/ranged/armor crossing or waist/back sheath selector.
+The option `Transmogrification.AllowAllOneHandedWeapons = 0` restores prior rules.
+No client patch or database migration is required.
+
+Both features are committed in separate worktrees, NOT integrated. Wait for the
+user's explicit build-finished confirmation AND integration approval before
+cherry-picking. Preserve unrelated primary edits. Main PlayerBots remains f2a82387;
+main transmog remains unchanged. No server build/start, client launch or database
+mutation occurred. No running voice bridge, rollouts, training or checkpoint changed.
+This is native server AI; it does not fix clipping or resume the paused learned
+client-input adapter.
+
+Production-method fixtures pass client ownership/trade/input checks and all 225
+one-handed appearance pairs plus exclusions/opt-out. MSVC syntax and PlayerBots
+style checks pass. Appearance fixtures stub live eligibility. Live follow/stay,
+talents, trades, keyboard takeover, logout/reconnect and appearance eligibility
+remain to test after integration, build and deployment. Shared PlayerbotAI headers
+cause broader module recompilation. Upstream fetch failed; synchronization remains
+unverified. No push was performed.
