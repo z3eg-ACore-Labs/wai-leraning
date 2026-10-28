@@ -1250,3 +1250,38 @@ source hashes below identify the tested snapshot. Documentation is committed sep
 - `release-tools/TelegramBuild.psm1`: `24a64766681d397ea61a3deed4f684f2efde6ee9cfd2d58f56447c9c9a0d9ff1`
 - `release-tools/Setup-BuildTelegram.ps1`: `a7c8bb95d660c3a850678394851312b173dd77f1403053867bb66a37818a317f`
 - `release-tools/Test-BuildTelegram.ps1`: `02efeb8ad2d190da2bdb6eff208d1d15347339dc6c0d64d6c79e1ecff595b4ed`
+
+
+## 2026-10-28 - ldist loot distribution isolated
+
+User requested a command to redistribute bots' bag loot through bot-to-bot trades,
+main-spec upgrades before all possible off-spec profiles, without bag-space deadlocks
+or repeated trading loops. User chose the command name ldist and explicitly required
+separate-worktree development while the current server build runs; cherry-pick and
+another build require later approval.
+
+PlayerBots feature commit 6198c475 (base 7ae8feaa) implements .ldist and status/cancel,
+with party/raid and single-bot whisper dispatch. It operates only on controlled,
+ready bot participants, including automatic real-client followers assigned to the
+leader. Ordinary humans and the requester do not auto-trade. Full/busy bots are
+excluded. Nearby tradable bag armor/weapons only; no equipped/bank/commodity moves.
+
+The existing best-item main/off-spec grading is reused. Main grading considers
+already held bag gear. Higher-item-level snapshot ordering, stable ties favoring
+holders, no received-item requeue and one item per world operation form a bounded
+greedy pass, not a globally optimal loadout solver. Native trade handlers preserve
+binding/storage rules. Created trades complete or cancel within their operation;
+no trade waits/retries. Job limits: one per group, 16 global, 4096 items, ten minutes.
+Managed transfers suppress their own upgrade-acquisition triggers. No forced equip.
+
+Native production-operation fixtures pass ranking and 22 failure/eligibility scenarios
+plus cancellation-before-transfer, multi-item passes, changed bag capacity, queue
+refusal, disabled-module and command validation checks. Real scoring/native trade
+internals are stubbed; live trade behavior remains unverified. All three touched
+translation units pass MSVC syntax; module style and diff whitespace checks pass.
+No new build/server, trade, database mutation, recording or training was started.
+
+The feature is committed only in the isolated worktree, not the main build checkout.
+Guide: module doc/LOOT-DISTRIBUTION.md. Await explicit integration approval, then
+cherry-pick, rebuild/publish, and live-test a small nearby party with main/off upgrades,
+full bags and bound items. Existing active build and Telegram completion hook unchanged.
