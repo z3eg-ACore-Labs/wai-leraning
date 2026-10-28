@@ -1285,3 +1285,58 @@ The feature is committed only in the isolated worktree, not the main build check
 Guide: module doc/LOOT-DISTRIBUTION.md. Await explicit integration approval, then
 cherry-pick, rebuild/publish, and live-test a small nearby party with main/off upgrades,
 full bags and bound items. Existing active build and Telegram completion hook unchanged.
+
+
+## 2026-10-28 - Upgrade grading and Bagnon usability follow-up
+
+A druid requested a one-handed axe as an off-spec upgrade. Source review found the
+off-spec path lacked the class weapon-proficiency gate used by main-spec scoring.
+Stats including stamina were already collected and role-weighted, but best-item
+comparisons disabled the old approximate set-piece multiplier. Independent isolated
+fix 59af9f4d adds weapon eligibility, threshold-aware set replacement analysis,
+modeled spell/stat credit for newly completed bonuses, and coherent owned off-spec
+loadouts without duplicate rings or impossible offhands. Active set thresholds are
+conservatively protected. Actual role-weight and production-method native fixtures,
+MSVC syntax and module style pass; live grading remains unverified. Shared calculator
+API changes require wider module recompilation. No main-checkout integration/build.
+The same fix is cherry-picked as d4d50184 onto isolated ldist branch after 6198c475;
+combined validation is being recorded separately. Hold integration until approved.
+
+User also requested Bagnon colors for recipes, then expanded to all item types.
+A companion prototype did not visibly work for the user. The revised extension is
+embedded in the existing Bagnon item file to load on reload, backed up first, with
+an idempotence guard and global icon-color post-hook. It scans both tooltip sides
+and embedded color codes: red text gives red tint, localized already-known text
+wins and greys/desaturates the icon. Recipe class gating was removed. Cached alt
+inventories are excluded. /bagtint reports loaded version and visible-slot counts.
+Lua 5.1 mock checks pass; live coloring after the final revision awaits user feedback.
+This addon work changes no server code or model weights.
+
+
+## 2026-10-28 - Build notification execution-context repair
+
+The client-bots-onehand build compiled successfully in about 2 hours 5 minutes,
+but publication failed under sandbox permissions. The same sandbox could not see
+the normal-user Windows-protected Telegram config, so notification was disabled.
+Normal approved execution could see both config and release directory. The build
+hook now writes explicit delivery status into the build log and a local completion
+receipt, including compilation exit code versus publication result. Offline notifier
+and original-exit-code-preservation checks still pass. No token was logged/copied.
+
+User authorized a no-change test build. telegram-smoke completed in 25.2 seconds
+including preflight/publication/notification; MSBuild reported 8.3 seconds. All build
+outputs were up-to-date. The executable checksum is identical to the previous build.
+Publication succeeded and Telegram API accepted the completion message; receipt says
+succeeded / compilation exit 0 / telegram sent. No server was started and no isolated
+ldist or grading changes were integrated. Future agent-run builds need an approved
+context with release write access and visibility of the normal-user credential file.
+
+
+## 2026-10-28 - Approved integration and build handoff
+
+User approved integration and a server build with Telegram completion notification.
+PlayerBots commits d749c92f (bounded ldist) and 37fe64a7 (weapon eligibility,
+role-weighted scoring and set protection) are now in the primary checkout.
+Combined production-operation fixtures and all four integrated C++ syntax checks
+passed. Prior Telegram smoke build completed and the user confirmed receipt.
+No server was started; live trading and grading still require verification after deployment.
