@@ -1205,3 +1205,22 @@ talents, trades, keyboard takeover, logout/reconnect and appearance eligibility
 remain to test after integration, build and deployment. Shared PlayerbotAI headers
 cause broader module recompilation. Upstream fetch failed; synchronization remains
 unverified. No push was performed.
+
+
+## 2026-10-28 - Approved integration completed
+
+User confirmed the previous build finished and authorized integration. PlayerBots
+feature 7fc49cb3 was cherry-picked as ee1a6b73; transmog f71ddc6 as 000b150.
+The existing uncommitted PlayerbotAI control-mode edits were backed up, three-way
+merged cleanly, and restored as uncommitted changes. Other unrelated edits remain.
+Integrated native fixtures pass, including 225 one-handed pairs; all six touched
+PlayerBots translation units pass MSVC syntax, and full module style passes.
+No server build/start, client launch, database mutation or training occurred.
+The changes are ready for the user's normal build/publish workflow; live checks
+remain. The native-client control layer does not fix server movement clipping.
+
+User also requested asynchronous builds with completion-triggered chat notification
+instead of repeated agent polling. Official Codex hook docs state background hook
+completion cannot start an idle turn. MCP Events callbacks are documented for cloud
+Work chats and dots, not this local Codex chat. No polling automation or unsupported
+chat-wakeup hook was installed. No build has been authorized/started in this turn.
