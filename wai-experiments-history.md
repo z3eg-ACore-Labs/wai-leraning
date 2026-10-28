@@ -1224,3 +1224,29 @@ instead of repeated agent polling. Official Codex hook docs state background hoo
 completion cannot start an idle turn. MCP Events callbacks are documented for cloud
 Work chats and dots, not this local Codex chat. No polling automation or unsupported
 chat-wakeup hook was installed. No build has been authorized/started in this turn.
+
+
+## 2026-10-28 - Telegram build completion hook
+
+User requested direct Telegram completion messages rather than agent polling.
+The build script now invokes an opt-in completion notifier after success or failure,
+including early validation, movement preflight and publication failures. Success
+requires publication. Configure does not notify. One bounded HTTPS request, no
+retry/listener, no raw log upload. Delivery failures do not change build exit status.
+
+Setup prompts locally for a hidden bot token and numeric chat ID, optionally discovers
+private chat IDs from recent messages, and stores the token using Windows per-user,
+per-machine credential protection outside source control. Explicit Test sends a test;
+Disable removes configuration. No credentials were supplied, no live messages sent.
+
+PowerShell parsing and mocked offline tests pass: opt-in, summaries, test wording,
+API/network/config errors, token redaction, no retry, Configure exclusion, nonfatal
+routing and child-process exit-code preservation. No build/server/training occurred.
+This directly notifies the user; it does not wake an idle Codex chat or introduce
+an asynchronous build scheduler. Setup/live delivery remain for the user.
+Implementation files are workspace tools outside an implementation Git repository;
+source hashes below identify the tested snapshot. Documentation is committed separately.
+- `build-playerbots.ps1`: `0884fe94cb5d3ce30099f2a0c8c84c7450df5dd7652f998c5b88e3d14c994d01`
+- `release-tools/TelegramBuild.psm1`: `24a64766681d397ea61a3deed4f684f2efde6ee9cfd2d58f56447c9c9a0d9ff1`
+- `release-tools/Setup-BuildTelegram.ps1`: `a7c8bb95d660c3a850678394851312b173dd77f1403053867bb66a37818a317f`
+- `release-tools/Test-BuildTelegram.ps1`: `02efeb8ad2d190da2bdb6eff208d1d15347339dc6c0d64d6c79e1ecff595b4ed`
