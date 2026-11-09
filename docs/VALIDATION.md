@@ -30,7 +30,8 @@ repeats self-contained checks; add `--qol /path/to/mod-playerbots-qol` for the s
 Native process tests require the matching patched core/Boost. CI results are separate from local evidence.
 
 These results must not be presented as a full-module link. No configure/full worldserver build, server/client launch, database
-operation, live gameplay, model initialization/inference/training or deployment was performed.
+operation, live gameplay, production model/controller session or deployment was performed. Temporary
+synthetic model operations were confined to the offline learning tests described above.
 
 Fresh preservation comparison matched every recorded original core/PlayerBots source hash and HEAD/dirty
 status (10,452 core files, 1,781 PlayerBots files). Existing original WAI/learning configuration, runtime
