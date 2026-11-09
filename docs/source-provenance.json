@@ -1,0 +1,83 @@
+{
+  "recording": {
+    "coreRevision": "e32e08f57",
+    "includesWorkingTree": true,
+    "sourceHashes": {
+      ".clang-format": "00729cd01eca57a59197e43f543e54fe6bec7bc9f6f32efb3ae1478b85985721",
+      ".gitignore": "237ed7ee1b53740fa7042d6b77e4f91a988796f8f3098ba0f409a39fb4ca5ee9",
+      "README.md": "98c13e52a295cf4e6fff512d813c75bf799ab00a5c85d8a61545a169b77c7936",
+      "conf/gameplay-observer.conf.dist": "f64ac7df01fcab7782228895480589beb4de0fddcfcc4643b764a9280e5ff1fe",
+      "src/DungeonFileWriter.h": "aed20633cf66260163b82e13544bc8360f7dea375bf2b4479f9849870351f757",
+      "src/GameplayObserver.cpp": "bbdba0a4ca2185d86e38136cec44d116321b537b3d8433e7d39cf8ec8d8ae36b",
+      "src/loader.cpp": "52b888c32def07cb7e44aa915057fd858d319878df0d60782e053d07167bf74b",
+      "src/NavigationCommand.h": "1d644a5e83468e65375c33ed5a6e0df2905701fb5d4431cb267bb1fa9fcb52c5",
+      "src/NavigationControl.cpp": "3d77612310240105880552e25410921e109636d90bbea868eb778a4b336e3c8b",
+      "src/NavigationControl.h": "b4203b966c091680b073c10eef0f58a559d21be4fc7bf194b79ce8635f445493",
+      "src/NavigationSnapshot.h": "8903d8d38d2c567c7b921f3aa0378f8d3d9eb38bd60bbc494a468ab443bbb29e",
+      "src/RecordingProfile.h": "e3c8cb1e24b2535830435815c3ecc468c0f4ba35dedd2f3c26d3b6da22e2cb2d",
+      "tests/test_navigation_command.cpp": "4942c930fd76669ca595ecde6a06e53e258c93d36b3312f56155a4b5b2ab515f",
+      "tests/test_navigation_snapshot.cpp": "9e09152eb783c703163f5cae0032646ae368650da6ab706508e0470007fb3d08",
+      "tests/test_navigation_validation.py": "79e8d7aa440d998f0b2b2e500a86d2f01d7376472ea6e38aa17e79c191432e1d",
+      "tests/test_recording_profile.cpp": "20e1b21748d13ac7e7b1d90bd99de090779ed47e4b0412e148b738b292a9fdf2",
+      "tests/test_validation.py": "6e201685f41382ec42f54a151369a7cff4c242025c43c7bede05d35f275dd916",
+      "tools/validate_observation.py": "8a3f615069ee77327776555f6ec5a0a80077f6436c062dd74a27d400f5782d74"
+    },
+    "note": "Additive extraction; active WAI source and runtime unchanged."
+  },
+  "action": {
+    "sourceModuleRevision": "df5f6a17d7b3b94ea2bb45aad0cf61c7f1d45b20",
+    "sourceHadUncommittedChanges": true,
+    "sourceHashes": {
+      ".clang-format": "00729cd01eca57a59197e43f543e54fe6bec7bc9f6f32efb3ae1478b85985721",
+      "README.md": "50d9b3da51556b3b7bb9e0784a21e948eb25da1c221765dec2909c5e845f7d5b",
+      "conf/wai-action.conf.dist": "eda721ed8cce0dcb39f2eff5871e92bbb1c22c1a05983c27209b16d89e9acdf8",
+      "src/ActionLease.h": "ae61b77137ff69c1c15996cc65e07fe1c454ccd22d322081756833d05c26ce46",
+      "src/ClientIdentity.h": "f3c9d04a29602d457d3f1841c9839946276d17b293f504b488abfb16f4a2dc22",
+      "src/ClientProgress.h": "bb9950f7b5a1060eeca8c73726bc2d6541f7174d9b05e198fe376629c030dd57",
+      "src/loader.cpp": "34185428daf76f516dc94ac47f573b560ed8b9b6f3b6937c1950da1c9c52211a",
+      "src/PassiveRun.h": "4d510706397dcad254bf17d79eae9d61caf2e54522c91d14ad46e7fefae123f5",
+      "src/WaiAction.cpp": "03b6c6cdc23c96cf4e44270a590f553fc222a2162001511a3e175d13d42f72e3",
+      "apps/tests/test_client_rewards.py": "14c8011e972f1b96be63c8560bcc99643ecdebb122ed74a672c6c2f029afa992",
+      "apps/tests/test_encounter_completion.py": "f6c60f3cd3f3c3079c596e22671836691c799d2f4cfcddd4d01b21b407820bd0",
+      "apps/tests/test_passive_rewards.py": "58f9ca68374035aad59233891e4a7c1698734166d7b06724ef6d1bc6e9420c3c",
+      "apps/addon/WaiObserver/WaiObserver.lua": "727a225fe776bc55e93387b179e56cc936fef25b3f5a37c2e4b69863e3b0f7ff",
+      "apps/addon/WaiObserver/WaiObserver.toc": "002d38c17411105188d6d8d798b4e8dc51ebfaf094e1ca5f58f5bd373483be6a"
+    },
+    "note": "Includes pre-existing ClientIdentity/addon changes; source copied additively, active WAI unchanged.",
+    "botModeSource": {
+      "playerbotsRevision": "c1baa8fc",
+      "includesWorkingTree": true,
+      "parserSha256": "31d563a07f8d3e933a19591f3b44cf8505496bac05d11b92e489623ea2bca5bc",
+      "handler": "PlayerbotAI.cpp HandleControlModeCommand; extracted with unchanged observation/action-unavailable replies"
+    }
+  },
+  "episodes": {
+    "sourceModuleRevision": "0b79e814585ae4835eec112fd41089a347d528d0",
+    "sourceHadUncommittedChanges": false,
+    "sourceHashes": {
+      ".clang-format": "00729cd01eca57a59197e43f543e54fe6bec7bc9f6f32efb3ae1478b85985721",
+      "LEARNED-NAVIGATION.md": "5acc4a7516d8290606c959b9afc95d85ce257a38ce366b6b3bff67f69687f934",
+      "MOVEMENT-INTEGRITY.md": "426f236d7b2454c8fe2c247ae48476e88ea79a801a1339b3769c1d107202e226",
+      "README.md": "f657c3e3e6553edd516b9679e14de1b01a12a5152d26be52bf1a2042fff27d13",
+      "RECOVERY-AND-EXISTING-PARTY.md": "cd88e81f4e90df5d14aa0e58b83256f4b607b8186ac490621d0442524ef4b17c",
+      "WATCH-OBSERVERS.md": "37ad828987570ab08e8f339d617be9680c80480299fe4363b1b5d51df1a73636",
+      "conf/wai-episodes.conf.dist": "c435b3548325bfdc8162720b1774ead81351518456dcb06596c451f7c98c596c",
+      "src/AccountSetup.h": "2c90c7b4469c0e2d19d491be9a2e76ae9da5d5ed24de646570fc9cf8031a5647",
+      "src/BodyClearance.h": "c266c7c404baca98d140d725c851959b924cbdad46c757b43f8e0ce1f1bf3255",
+      "src/BoundaryRules.h": "ed155c1d376b43ae045db6b209dacd6dda28bd8b2b2f512bb7a7f445efb5b4f2",
+      "src/EpisodeData.h": "6e59b2d98d2b84d3856bf6a8408f51e6ad974b20c5b54610c2bd692b279d9859",
+      "src/EpisodeJournal.h": "03eddb179dd1d8906e0b8192694fe9a5f710018587dc819ddc3e6a37e989f401",
+      "src/EpisodeMovement.cpp": "593ee5ff59b2197f3c94249cc35254821f5f6519b1b243cba34c4ed907a8cc1c",
+      "src/EpisodeMovement.h": "41772e4698b9dc28027de489248952b2cfde7cfe416bc06922ede6d90dfea1f7",
+      "src/EpisodeOwnership.h": "8d58e596fe45ab2c30eb7dd9a15979d1a1991b29bfea78167f8000d1e00e69cf",
+      "src/EpisodeRecovery.h": "5ffc2799636c7dc1b1ac2a3a163b339209808562f62c857e8a5c06a422392efa",
+      "src/IntegrityMath.h": "6b6a81b7ab17f7c8792667383debd53b47b4c0006ac45c4c0fc1b95114a7b5b3",
+      "src/loader.cpp": "83018f98a7d0689da292ff07fd1028aebf10c25fc85324f250c16f5de31d672b",
+      "src/NavigationCorridor.h": "aa4abede5ceeb892dbfd342efa93cb0addc61de9353f3d1f02e9c12503c07ff2",
+      "src/NavigationSurface.h": "c7a345b77eb80f0415de5cadcde6469152f5708999bdf1346795c04e687ea831",
+      "src/ObserverClients.h": "13a5f4f473c472473da4ce6726572a483bde61b5ee06e0e0b5a9fd2e7937d1ef",
+      "src/WaiEpisodes.cpp": "ad85154eda7809167005b4a64c4f9fb696ccbb580519b26bf3467a080f0275dc"
+    },
+    "note": "AQ learned-mount command excluded and extracted separately. Additive source copy; original WAI unchanged."
+  }
+}

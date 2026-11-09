@@ -1,85 +1,63 @@
-# WAI learning workspace
+# WAI server module and learning tools
 
-The [automatic learned-navigation loop](RL-EPISODE-OPERATIONS.md) is a separate PPO experiment.
-It launches on episode start, not server startup. [Parallel parties](PARALLEL-EPISODES.md) collect
-experience for one shared model. The current source passes 35 focused offline tests and C++ syntax
-checks; the parallel server rebuild and live verification remain pending.
+One server module containing human recording, explicit character control/telemetry and experimental
+episode coordination. Components are separated internally and retain individual configuration and
+dependency checks. Optional Python controllers/trainers live in `apps/learning` in this same repository;
+their dependencies and private models are installed separately. This extraction preserves the existing
+WAI source, configuration and runtime.
 
-[Experiment history](wai-experiments-history.md) preserves decisions, observed runs, lessons and
-adjustments. Successful future training updates append sanitized summaries and commit only that
-history file locally. The updated controller must be restarted to load this recording hook.
+## Installation
 
-See [Training and debugging](TRAINING-AND-DEBUGGING.md) for the end-to-end flow,
-tool roles, model files, a real state-to-action JSON example, and commands.
+From a separate target core checkout, clone the existing repository into the standard module folder:
 
-## Interactive network example
-
-Open [network-example.html](network-example.html) in a browser after downloading
-or cloning this repository. It is a standalone view of the saved Maul example:
-16 observed state inputs, hidden layers of 12 and 8 ReLU neurons, and six spell
-probabilities. Select a neuron to inspect its incoming weights, weighted input
-contributions, bias and activation. The example embeds 362 learned parameters
-and one derived state/activation snapshot; it includes no raw recording or actor
-identifiers. It shows a training example, not live inference or training progress.
-Hidden neuron names are indices, not established semantic meanings. Distance is
-divided by 100 yards and clipped to [0, 1]; health is current/max health.
-
-The editable diagram source is [network-view.html](network-view.html). The
-standalone export supplies its own styles/runtime. GitHub's file viewer shows
-HTML source; download/open the standalone file to use the interactions. This
-repository update does not enable a hosted website or GitHub Pages.
-
-The first experiment is implemented in `train.py`. It uses NumPy, includes
-numerically checked backpropagation, and saves weights, per-decision activations
-and a complete training history. This is an executed diagnostic baseline,
-not the long-term learning framework.
-
-## Main stack selected for subsequent implementation
-
-- PyTorch: model modules, automatic differentiation, Adam, datasets/data loaders,
-  inference mode, gradient clipping and state_dict checkpoints.
-- TensorBoard: train/validation curves, action-level results, weights, gradients
-  and sampled hidden-activation distributions.
-- Netron: model architecture and tensor inspection, using an ONNX graph export.
-- pytest: feature extraction, dataset splitting, model serialization and inference
-  checks. Keep recordings and generated outputs outside public source repositories.
-
-CPU PyTorch, NumPy, pytest and TensorBoard are installed in the local environment;
-Netron was downloaded separately. TensorBoard logging and ONNX graph export
-remain planned integrations. A first live executor is
-now implemented in the standalone mod-wai-action server source, with `live.py`
-as the external PyTorch client. It has not been built or run in game. No training
-dashboard or autonomous dungeon policy exists yet. See `BACKLOG.md` and the
-server module README for deployment and startup commands.
-
-## Current prototype
-
-16 pre-action state features -> Dense(12), ReLU -> Dense(8), ReLU ->
-Dense(6), softmax over the demonstrated spell requests. There are 362 learned
-weights and biases. This runs on CPU without a language model or GPU.
-
-The larger proposed policy is a shared entity encoder for self/party/enemies,
-followed by temporal memory (for example a GRU), then separate heads for intent,
-controlled party member, target, movement goal and action timing. A class-specific
-executor maps intentions to available spells and validates legality. The larger
-architecture is conceptual; it has not been trained or benchmarked.
-
-## Reproduce the diagnostic baseline
-
-With Python and NumPy available, from the workspace root:
-
-```text
-python wai-learning/train.py path/to/events.jsonl --output output/wai-learning-demo
-python -m unittest discover -s wai-learning -p test_train.py -v
+```sh
+git clone https://github.com/z3eg-ACore-Labs/wai-leraning.git modules/mod-wai
 ```
 
-The source file is read once and hashed. Only a partial final line can be ignored;
-malformed complete records fail. Predictions use pre-handler state, excluding
-the requested spell's cooldown, observed outcome, timestamp and world origin.
-The existing recorder validator checks the complete prefix before training.
+Use the normal
+AzerothCore configure/build workflow, then copy the installed `wai.conf.dist` to `wai.conf` in the server
+configuration directory. Read [native prerequisites](compatibility/README.md) before building for episode
+or bot-mode support. No custom installer, automatic database updates, model downloads or client assets
+are included. Static linkage is the integration target.
 
-Outputs distinguish all-data training fit from a diagnostic chronological split
-of one episode. The latter is not an independent run or proof of generalization.
-These examples include failed requests, and prediction is evaluated only at the
-human's recorded spell-decision instants. Targets, movement, timing, looting,
-bot commands and combat consequences are not generated by this prototype.
+For the optional Python tools, follow [learning setup and usage](apps/learning/README.md). Installing
+the server module does not install Python packages or start controllers. Models, virtual environments
+and recordings are excluded from source control. Server and learner changes can be reviewed/released
+together; their internal boundaries allow a later repository split if independently useful.
+
+Do not compile this module alongside the original `mod-gameplay-observer`, `mod-wai-action` or
+`mod-wai-episodes` implementations. Their extracted source now lives under one loader; installing both
+would duplicate commands/hooks. AQ mount behavior and `.qirajimount` belong to `mod-aq-mounts`.
+
+## Choose components
+
+| Component | Settings and default | Guide |
+| --- | --- | --- |
+| Human recording | `GameplayObserver.Enable = 0`; profile `navigation` or `full` | [Recording](docs/recording/README.md) |
+| Explicit learned-navigation handoff | `GameplayNavigation.Enable = 1` permits requests only; needs QoL client API and a manually configured helper/model | [Recording/navigation](docs/recording/README.md) |
+| Druid server-action experiment | `Wai.Action.Enable = 0` | [Character control](docs/action/README.md) |
+| Client observations/passive telemetry | `Wai.Action.Client.Enable = 0` | [Character control](docs/action/README.md) |
+| Bot mode-status replies | `Wai.Action.BotModeCommands = 1`; `mode action` explicitly unavailable | [Commands](docs/action/README.md) |
+| Cloned-party episode harness | `Wai.Episodes.Enable = 0`; learned navigation required | [Episodes](docs/episodes/README.md) |
+
+Settings keep their existing names in one configuration file. Availability does not start recording,
+grant a lease, launch a helper, create characters or train models automatically. Those operations require
+their documented enablement and explicit user/administrator commands. Keep filled configurations,
+credentials, client identities, raw recordings, clone ownership journals and models private.
+
+Missing episode movement prerequisites produce an unavailable episode command/startup message while
+recording and character telemetry remain separate. Missing safe process support rejects helper/episode
+starts. Missing optional QoL control rejects navigation handoff while ordinary human recording remains
+available. Runtime exception handlers cannot repair arbitrary upstream C++/ABI changes; source checks
+and a later integration build are still necessary.
+
+## Source structure
+
+`src/recording`, `src/action` and `src/episodes` own feature state/policy. `src/integration` owns the WAI
+session/client-control/process/spline boundaries and optional voice command discovery. QoL retains its
+client state; WAI retains leases, recordings and episodes. `tests/` and `docs/` follow the same boundaries.
+There is one repository, loader and configuration file; no separate mandatory adapter repository.
+
+See [validation](docs/VALIDATION.md) for checked revisions and limits. Full worldserver linkage, live
+movement/casting/loot, real recording/encounters and model behavior remain separate integration work.
+Historical component notes describe earlier implementations and do not establish deployment here.

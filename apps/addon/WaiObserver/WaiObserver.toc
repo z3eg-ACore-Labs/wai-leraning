@@ -1,0 +1,5 @@
+## Interface: 30300
+## Title: WAI Passive Observer Identity
+## Notes: Session identity marker and movement bindings; never controls the character.
+## Version: 0.1.0
+WaiObserver.lua

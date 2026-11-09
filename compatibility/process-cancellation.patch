@@ -1,0 +1,122 @@
+diff --git a/src/common/Utilities/StartProcess.cpp b/src/common/Utilities/StartProcess.cpp
+index 8555ae0..d95d466 100644
+--- a/src/common/Utilities/StartProcess.cpp
++++ b/src/common/Utilities/StartProcess.cpp
+@@ -23,6 +23,9 @@
+ #include <boost/algorithm/string/join.hpp>
+ #include <boost/iostreams/copy.hpp>
+ #include <filesystem>
++#include <memory>
++#include <mutex>
++#include <thread>
+ 
+ #if BOOST_VERSION < 108800
+ #include <boost/process.hpp>
+@@ -72,8 +75,8 @@ namespace Acore
+         return { std::forward<T>(callback) };
+     }
+ 
+-    template<typename T>
+-    static int CreateChildProcess(T waiter, std::string const& executable,
++    template<typename T, typename Started, typename Stopped>
++    static int CreateChildProcess(T waiter, Started started, Stopped stopped, std::string const& executable,
+         std::vector<std::string> const& argsVector,
+         std::string const& logger, std::string const& input,
+         bool secure)
+@@ -155,6 +158,10 @@ namespace Acore
+             return EXIT_FAILURE;
+         }
+ 
++        auto unregister = [&](child*) { stopped(); };
++        std::unique_ptr<child, decltype(unregister)> registration(&*c, unregister);
++        started(*c); // Publish before pipe draining so early cancellation reaches the child.
++
+         auto outInfo = MakeACLogSink([&](std::string const& msg)
+         {
+             LOG_INFO(logger, "{}", msg);
+@@ -165,8 +172,15 @@ namespace Acore
+             LOG_ERROR(logger, "{}", msg);
+         });
+ 
+-        copy(outStream, outInfo);
+-        copy(errStream, outError);
++        // Drain both pipes concurrently; a full stderr pipe must not deadlock stdout.
++        std::jthread errors([&]()
++        {
++            try { copy(errStream, outError); }
++            catch (std::exception const&) { std::error_code error; c->terminate(error); }
++        });
++        try { copy(outStream, outInfo); }
++        catch (std::exception const&) { std::error_code error; c->terminate(error); }
++        errors.join();
+ 
+         // Call the waiter in the current scope to prevent
+         // the streams from closing too early on leaving the scope.
+@@ -195,7 +209,7 @@ namespace Acore
+             {
+                 return EXIT_FAILURE;
+             }
+-        }, executable, args, logger, input_file, secure);
++        }, [](child&) { }, [] { }, executable, args, logger, input_file, secure);
+     }
+ 
+     class AsyncProcessResultImplementation
+@@ -211,6 +225,7 @@ namespace Acore
+ 
+         Optional<std::shared_ptr<std::future<int>>> result;
+         Optional<std::reference_wrapper<child>> my_child;
++        std::mutex childMutex;
+ 
+     public:
+         explicit AsyncProcessResultImplementation(std::string executable_, std::vector<std::string> args_,
+@@ -232,7 +247,6 @@ namespace Acore
+             return CreateChildProcess([&](child& c) -> int
+             {
+                 int exitCode;
+-                my_child = std::reference_wrapper<child>(c);
+ 
+                 try
+                 {
+@@ -244,9 +258,17 @@ namespace Acore
+                     exitCode = EXIT_FAILURE;
+                 }
+ 
+-                my_child.reset();
+                 return was_terminated ? EXIT_FAILURE : exitCode;
+ 
++            }, [&](child& c)
++            {
++                std::lock_guard lock(childMutex);
++                my_child = std::reference_wrapper<child>(c);
++                if (was_terminated) { std::error_code error; c.terminate(error); }
++            }, [&]()
++            {
++                std::lock_guard lock(childMutex);
++                my_child.reset();
+             }, executable, args, logger, input_file, is_secure);
+         }
+ 
+@@ -266,9 +288,10 @@ namespace Acore
+         /// Tries to terminate the process
+         void Terminate() override
+         {
++            std::lock_guard lock(childMutex);
++            was_terminated = true;
+             if (my_child)
+             {
+-                was_terminated = true;
+                 try
+                 {
+                     my_child->get().terminate();
+diff --git a/src/common/Utilities/StartProcess.h b/src/common/Utilities/StartProcess.h
+index a375a9b..198fadd 100644
+--- a/src/common/Utilities/StartProcess.h
++++ b/src/common/Utilities/StartProcess.h
+@@ -17,6 +17,7 @@
+ 
+ #ifndef __PROCESS_H__
+ #define __PROCESS_H__
++#define AC_ASYNC_PROCESS_CANCELLATION_API 1
+ 
+ #include "Define.h"
+ #include <future>

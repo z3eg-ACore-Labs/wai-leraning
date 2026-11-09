@@ -1,0 +1,36 @@
+name: Offline WAI fixtures
+on: [push, pull_request]
+jobs:
+  learning:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r apps/learning/requirements.txt
+          python -m pytest -q apps/learning
+      - run: pwsh -NoProfile -File apps/learning/tests/Test-WaiRuntime.ps1
+  policies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/check-all.py
+      - run: pwsh -NoProfile -File tools/episodes/Test-Watch-Wai.ps1
+  native-process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: mod-playerbots/azerothcore-wotlk
+          ref: e7e2e288e7d9ec30e2dfe6f417178a95986fcbb2
+          path: .local/core
+          sparse-checkout: src/common
+      - run: sudo apt-get update && sudo apt-get install -y libboost-filesystem-dev libboost-system-dev
+      - run: |
+          git -C .local/core apply --check "$GITHUB_WORKSPACE/compatibility/process-cancellation.patch"
+          git -C .local/core apply "$GITHUB_WORKSPACE/compatibility/process-cancellation.patch"
+          python3 tests/episodes/check-process.py --core .local/core

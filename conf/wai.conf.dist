@@ -1,0 +1,125 @@
+# WAI server components. Recording/action/client/episodes require explicit configuration.
+# Existing setting names are retained; no helper/model starts merely from installation.
+
+
+# RECORDING
+# Opt-in gameplay recording; optional explicitly requested navigation handoff is configured below.
+GameplayObserver.Enable = 0
+
+# navigation (default): position/facing, alive/combat/casting boundaries and movement requests only.
+# full: preserve detailed party/target state, spell catalogs and combat/cast events for future research.
+# Profile changes apply on configuration reload or server restart; existing recordings are retained.
+# Any value other than exact "full" selects navigation. Recording never controls bot combat or movement.
+GameplayObserver.Profile = "navigation"
+
+# Automatically follows the single in-world human, excluding bot sessions and AI-controlled altbots.
+# With no eligible human or multiple eligible humans online, recording waits instead of choosing one.
+# Character switches are detected while the server remains running. No character GUID setting is needed.
+
+# Periodic state sampling, clamped to 100..5000 ms. Input events get pre-handler state.
+GameplayObserver.IntervalMs = 200
+
+# Relative to worldserver working directory, or an explicit local directory.
+# Each dungeon entry creates a named visit file; exit/logout/shutdown flushes and closes it.
+# No recording file is created outside a dungeon. Existing visits are never overwritten.
+GameplayObserver.OutputDirectory = "gameplay-observations"
+
+# Explicit human recording / learned navigation handoff (.wainav run/record/status).
+# Requires a manually started local helper and compatible trained model. No helper means no movement.
+# PlayerBots client-bot permission is respected; native AI handles combat only while running.
+# Availability only: no movement/AI attachment occurs until this character explicitly types .wainav run.
+GameplayNavigation.Enable = 1
+
+
+# ACTION
+# Explicitly enabled local-model control of the logged-in human druid.
+# This module does not enable control or start a controller on server startup.
+Wai.Action.Enable = 0
+
+# Limit the first experiment to Wailing Caverns (map 43).
+Wai.Action.Map = 43
+
+# Route replay is separate from learned spell choice. Disabled until explicitly enabled.
+Wai.Action.AllowRouteReplay = 0
+
+# Frozen navigation diagnostic: real client input, server supplies observations only.
+# Enable explicitly and grant .wai client start from the logged-in test character.
+Wai.Action.Client.Enable = 0
+Wai.Action.Client.Map = 389
+
+# Bot mode/observation replies only; mode action remains explicitly unavailable.
+# Requires generic PlayerBots extension API v1; startup-only.
+Wai.Action.BotModeCommands = 1
+
+
+# EPISODES
+# Opt-in Ragefire Chasm episodes (one to four parallel parties). Requires mod-playerbots.
+Wai.Episodes.Enable = 0
+# Learned navigation is required. Scripted routing is rejected, never used as a fallback.
+Wai.Episodes.Policy = "learned"
+# Launched only by waiepisode start/recover, never by worldserver startup. Absolute paths recommended.
+# Executable: the learning environment's Python executable. Script: rl_loop.py.
+Wai.Episodes.Learner.Executable = ""
+Wai.Episodes.Learner.Script = ""
+Wai.Episodes.Learner.Home = "wai-learning-rl"
+# Optional existing voice-bridge credential JSON; otherwise inherit WAI_SOAP_USER/WAI_SOAP_PASSWORD.
+# Keep credential contents private. The filename is passed to Python, never the password.
+Wai.Episodes.Learner.Credentials = ""
+Wai.Episodes.Learner.Url = "http://127.0.0.1:7878/"
+# Overall run limit, seconds; clamped to 60..14400.
+Wai.Episodes.TimeoutSeconds = 3600
+# Dedicated account: empty or harness-owned clones; never a human/random-bot account.
+Wai.Episodes.Account = ""
+# Parties 2..4 default to <Account>_2, <Account>_3, <Account>_4. Missing secondary accounts
+# are created only after an administrator requests that party count, using the native account API.
+# Optional overrides must be distinct dedicated accounts; never a human/random-bot account.
+# Wai.Episodes.Account2 = ""
+# Wai.Episodes.Account3 = ""
+# Wai.Episodes.Account4 = ""
+# Distinct offline characters, same faction, levels 13..20. Mixed races are supported.
+# The tank is the leader. Characters are copied, never modified.
+Wai.Episodes.Tank = ""
+Wai.Episodes.Healer = ""
+Wai.Episodes.Damage1 = ""
+Wai.Episodes.Damage2 = ""
+Wai.Episodes.Damage3 = ""
+
+# Per-episode JSONL root; relative paths resolve from the server working directory.
+Wai.Episodes.OutputDirectory = "wai-episodes"
+
+# Persistent private clone ownership; keep this directory across server restarts.
+Wai.Episodes.StateDirectory = "wai-episode-state"
+
+# Optional experimental movement audit/teleport gate; native bot movement remains active.
+Wai.Episodes.MovementIntegrity.Enable = 0
+
+# Tolerant post-movement monitor, independent of the experimental strict spline gate.
+# A participant must remain over this distance from navigation/floor support for 3 seconds.
+# Missing data is an infrastructure error; confirmed escapes train as failed episodes.
+# Navigation data is not an authoritative dungeon playable-area boundary.
+Wai.Episodes.Boundary.Enable = 1
+Wai.Episodes.Boundary.ToleranceYards = 3.0
+
+# Partial-death recovery reuses native release/summon after surviving party leaves combat.
+# Full wipes still end the episode. Native summon revival must be enabled.
+Wai.Episodes.Recovery.Enable = 1
+Wai.Episodes.Recovery.TimeoutSeconds = 120
+
+# Explicit local-console observer launcher. Nothing starts at server startup.
+# Executable = PowerShell 7 path, Script = published Watch-Wai.ps1, Client = game executable.
+# SOAP uses the existing learner credentials; observer login is separately DPAPI-encrypted.
+Wai.Episodes.Watch.Executable = ""
+Wai.Episodes.Watch.Script = "Watch-Wai.ps1"
+Wai.Episodes.Watch.Client = ""
+Wai.Episodes.Watch.LoginFile = "wai-watch-login.xml"
+
+# Private dedicated observer accounts/characters. Empty means unavailable, never inferred.
+# Use matching tools/Watch-Wai.ps1; do not commit filled configuration or encrypted login files.
+Wai.Episodes.Watch.Account1 = ""
+Wai.Episodes.Watch.Character1 = ""
+Wai.Episodes.Watch.Account2 = ""
+Wai.Episodes.Watch.Character2 = ""
+Wai.Episodes.Watch.Account3 = ""
+Wai.Episodes.Watch.Character3 = ""
+Wai.Episodes.Watch.Account4 = ""
+Wai.Episodes.Watch.Character4 = ""

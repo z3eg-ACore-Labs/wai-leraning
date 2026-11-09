@@ -1,0 +1,83 @@
+diff --git a/src/server/game/Movement/Spline/MoveSplineInit.cpp b/src/server/game/Movement/Spline/MoveSplineInit.cpp
+index d28b074..f368fb2 100644
+--- a/src/server/game/Movement/Spline/MoveSplineInit.cpp
++++ b/src/server/game/Movement/Spline/MoveSplineInit.cpp
+@@ -16,6 +16,7 @@
+  */
+ 
+ #include "MoveSplineInit.h"
++#include "SplineValidation.h"
+ #include "MoveSpline.h"
+ #include "MovementPacketBuilder.h"
+ #include "Opcodes.h"
+@@ -108,6 +109,9 @@ namespace Movement
+         if (!args.Validate(unit))
+             return 0;
+ 
++        if (!ValidateSplineLaunch(unit, args))
++            return 0;
++
+         unit->m_movementInfo.SetMovementFlags(moveFlags);
+         move_spline.Initialize(args);
+ 
+diff --git a/src/server/game/Movement/SplineValidation.cpp b/src/server/game/Movement/SplineValidation.cpp
+new file mode 100644
+index 0000000..04f53cb
+--- /dev/null
++++ b/src/server/game/Movement/SplineValidation.cpp
+@@ -0,0 +1,30 @@
++/* AzerothCore extension; GNU GPL v2 or later. */
++#include "SplineValidation.h"
++#include <atomic>
++
++namespace Movement
++{
++    namespace
++    {
++        std::atomic<SplineValidator> validator{nullptr};
++    }
++
++    bool RegisterSplineValidator(SplineValidator callback)
++    {
++        if (!callback)
++            return false;
++        SplineValidator expected = nullptr;
++        return validator.compare_exchange_strong(expected, callback) || expected == callback;
++    }
++
++    void UnregisterSplineValidator(SplineValidator callback)
++    {
++        validator.compare_exchange_strong(callback, nullptr);
++    }
++
++    bool ValidateSplineLaunch(Unit *unit, MoveSplineInitArgs const &args)
++    {
++        SplineValidator callback = validator.load();
++        return !callback || callback(unit, args);
++    }
++} // namespace Movement
+diff --git a/src/server/game/Movement/SplineValidation.h b/src/server/game/Movement/SplineValidation.h
+new file mode 100644
+index 0000000..ced6059
+--- /dev/null
++++ b/src/server/game/Movement/SplineValidation.h
+@@ -0,0 +1,19 @@
++/* AzerothCore extension; GNU GPL v2 or later. */
++#ifndef AC_SPLINE_VALIDATION_H
++#define AC_SPLINE_VALIDATION_H
++#define AC_SPLINE_VALIDATION_API 1
++
++#include "Define.h"
++
++class Unit;
++namespace Movement
++{
++    struct MoveSplineInitArgs;
++    using SplineValidator = bool (*)(Unit *, MoveSplineInitArgs const &);
++
++    // An optional static-module validator. It must not modify the executing movement generator.
++    AC_GAME_API bool RegisterSplineValidator(SplineValidator validator);
++    AC_GAME_API void UnregisterSplineValidator(SplineValidator validator);
++    AC_GAME_API bool ValidateSplineLaunch(Unit *unit, MoveSplineInitArgs const &args);
++} // namespace Movement
++#endif

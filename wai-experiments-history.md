@@ -1023,7 +1023,7 @@ Checkpoint saved and training completed. Weight changes alone do not establish i
 Total training reward: -414.6030; weight-change L2: 0.070895.
 Checkpoint saved and training completed. Weight changes alone do not establish improved play.
 
-### 2026-10-26 � One-command observer clients: implementation and first-use setup
+### 2026-10-26 — One-command observer clients: implementation and first-use setup
 
 - User requested four tiled observer clients, one per concurrent party, using separate level-80
   undead mage characters. Existing accounts were created by the user; this change does not change
@@ -1340,3 +1340,342 @@ role-weighted scoring and set protection) are now in the primary checkout.
 Combined production-operation fixtures and all four integrated C++ syntax checks
 passed. Prior Telegram smoke build completed and the user confirmed receipt.
 No server was started; live trading and grading still require verification after deployment.
+
+
+## 2026-10-28 - Client demonstrations and navigation takeover
+
+User requested an easy switch between learning from human play and model control
+of the active client while GitHub fork setup awaits sign-in. Added a paused-by-default
+Python client session: F6 records stable human movement, F7 pauses, F8 explicitly
+arms model navigation, F12 stops. Native watchdog releases keys on timeout, focus
+loss or manual takeover. Telemetry remains read-only and identity/lease scoped.
+Human-only behavior cloning writes a new client_bc checkpoint; original PPO weights
+and optimizer are preserved. Optional training occurs after a clean session stop,
+not on every frame, and model actions never become demonstration labels.
+Eighteen offline tests passed, including recording without input, model-only sample
+separation, transport cleanup, source/critic preservation and malformed data rejection.
+This covers navigation only; combat/UI imitation and live client validation remain
+pending. No game clients, server, build or production model training were started.
+See CLIENT-LEARNING-MODES.md in the learning repository for setup and limitations.
+
+
+## 2026-10-28 - Keep assisted learning and reinforcement learning separate
+
+User explicitly requested separate approaches for comparison; do not combine training
+or transfer subsequent updates between them. Keep separate checkpoint outputs, human
+demonstrations and RL rollouts, and identify training method and source initialization
+in comparisons. Existing assisted initialization can copy PPO weights; this is not
+an independent-from-scratch baseline and must be disclosed in evaluation. No weights
+were reset or changed by this decision. A future combined training path is out of scope
+unless the user explicitly requests it.
+
+
+## 2026-10-28 - Three comparison tracks: AL, RL and mixed
+
+User expanded the experiment to three tracks: AL (human demonstrations), RL
+(reward-driven learning) and mixed (both). This supersedes the previous exclusion
+of a combined track, but does not authorize merging AL/RL outputs into each other.
+Keep independent checkpoints, optimizer state, logs and evaluation labels per track.
+Mixed may consume both data types with provenance; AL remains human-only and RL
+remains reward-only. Record initialization and compare on matching evaluation setups.
+The mixed trainer is planned, not implemented. No production weights were changed.
+
+
+## 2026-10-28 - Explicit AL/RL/mixed takeover selection
+
+Added --models mapping plus --track selection, with F8 AL, F9 RL and F10 mixed
+client takeover. The checkpoint algorithm must match its named track. Missing or
+mismatched tracks leave control paused, never fall back to another model. Selection
+records track/version/hash per activation and policy decision. Mode changes release
+prior movement before loading and require fresh telemetry before input can resume.
+Automatic demonstration fitting is AL-only and pinned to the initial AL source.
+Twenty-one offline tests passed; no live client, build or production training ran.
+Mixed selection contract exists, but mixed trainer/checkpoint remain unavailable.
+
+
+## 2026-10-28 - Use established scientific terminology
+
+User requested standard field terminology rather than user-created nicknames in
+all future explanations and feature labels. Use imitation learning (IL), specifically
+behavior cloning (BC), reinforcement learning (RL), specifically proximal policy
+optimization (PPO), and hybrid imitation and reinforcement learning. Hybrid denotes
+the experimental combination, not a new named algorithm. Updated session labels,
+track configuration keys and current guide to il/rl/hybrid. Historical chronology
+remains intact; no model weights or training behavior changed.
+
+
+## 2026-10-28 - Prefer full scientific names in daily operation
+
+User requested full names instead of abbreviations wherever practical to reinforce
+familiarity. Display Imitation learning, Reinforcement learning, and Hybrid imitation
+and reinforcement learning in controls and runtime messages. Spell out behavior
+cloning and proximal policy optimization in explanations. Short configuration keys
+il/rl/hybrid remain stable technical identifiers. No model behavior changed.
+
+
+## 2026-10-28 - Independent client policy maintenance implemented
+
+Design and controls were committed first as d4957af. Implemented independent
+behavior-cloning, proximal-policy-optimization and hybrid client policies with
+separate immutable generations, optimizers, random state and consumed-session
+hashes. Hybrid uses its own on-policy reward data plus a weighted human behavior-
+cloning loss and bounded demonstration replay; standalone rollouts are not reused
+as hybrid on-policy data. --learn enables post-session maintenance after input is
+released; evaluation remains read-only. F6 demonstrates, F7 pauses, F8 selects
+imitation learning, F9 reinforcement learning, F10 hybrid and F12 ends the session.
+Added read-only exact-instance boss/death/time reward telemetry to wai-action;
+Ragefire boss identities are outcome labels only, never navigation destinations.
+The managed initializer preserves existing production weights and declares either
+common random initialization or an explicitly supplied read-only source.
+Validation: 69 offline Python tests passed across client, rewards, training/history,
+existing PPO, parallel collection, exploration and transport; production C++ reward
+hook fixtures, MSVC syntax, module style and clang-format checks passed. Full-core
+style scan still reports unrelated pre-existing files; no such files were changed.
+No live gameplay, production model update or server start was performed. A server
+rebuild is required for the new reward fields. See CLIENT-LEARNING-MODES.md for
+setup, commands, update conditions, initialization and remaining navigation-only
+limitations. Implementation ready; requested build is the next step.
+
+
+## 2026-10-28 - Passive human dungeon lifecycle and server-startup helper
+
+User confirmed the client-learning-hybrid build succeeded. The build receipt and
+manifest agree; the reward module revision matches its source. This is build and
+publication evidence, not evidence of a restart or live learning. No production
+client policy registry existed at recovery inspection; none was initialized here.
+
+User requested automatic recording on ordinary dungeon entry, saved recording
+and behavior-cloning plus human-only hybrid maintenance on true completion, with
+reinforcement learning remaining explicitly commanded. Normal server startup must
+start the resident helper; it never opens WoW. Documented the approach before
+implementation, then added passive authenticated observations that never grant or
+refresh an action lease or generate input. The established server launcher starts
+a hidden observer tied to the actual server process handle, not an interactive
+PowerShell process that could outlive it. Private settings select the character;
+a missing registry never silently initializes random production policies.
+
+The subsequent request expanded capture across dungeons and authorized existing
+server completion events. Non-raid dungeon observations route to independent map
+and difficulty stores. An existing core global encounter hook supplies actual kill
+or spell credit and instance completed masks. Valid coverage requires an instance
+script, valid encounter indices and a finale definition; all listed bits and an
+owned observed final credit must be present after a real update. Missing coverage
+stays unknown. Four observed party-owned Ragefire bosses remain an additional
+proof. No guessed exit, timeout or death completion is introduced.
+
+Death/wipe and temporary departure allow same-instance recovery. Disconnect,
+controller conflict, stale transport, changed instance/client and observer stop
+preserve incomplete recordings without training. Immutable run files and consumed
+session hashes prevent repeated completion/reentry updates. Completed human logs
+cannot contain model decisions or reinforcement transitions. Maintenance updates
+only imitation and hybrid policies; hybrid reports zero reinforcement decisions.
+Per-dungeon checkpoints carry map/difficulty identity and reject foreign logs.
+
+Offline evidence: 34 client regression tests and 8 automatic lifecycle/routing tests
+passed, including synthetic optimizer updates, unchanged reinforcement checkpoint
+bytes, duplicate consumption, generic encounter proof and foreign-store rejection.
+Three native fixture suites exercise production client/passive reward and encounter
+hooks; targeted translation-unit syntax and module C++ style pass. Mocked PowerShell
+startup verifies hidden helper startup, actual-server ownership, console preservation
+and exit-code propagation. The targeted publisher test verifies helper installation
+without creating or overwriting private settings. Full publisher fixtures hit sandbox
+hardlink restrictions; SQL style's automatic fetch failed in the sandbox and no SQL
+was changed. No server/game/helper, production initialization/training, build,
+database modification or push ran for this change.
+
+The user also requested a remembered-dungeon bot invitation, explicit matching model
+play, and learned combat as well as navigation. Those are not implemented by this
+movement-only recorder. The next-phase design records semantic spell/target/timing
+attribution, new versioned observations/actions, per-build compatibility, explicit
+takeover and per-dungeon coverage checks. Native combat is not substituted for the
+learned-combat goal. Visits, saved weights, lower loss or synthetic tests do not
+establish competence. Live per-dungeon completion coverage remains unverified.
+
+
+## 2026-10-28 - Requested automatic-dungeon-recording build published
+
+User explicitly requested the server rebuild. The guarded wrapper completed the
+Release worldserver target with one build job and one compiler worker, live logs
+and three-second free-disk checks enforcing a 10 GiB floor. CMake automatically
+regenerated the project to register the module-local header; no manual configure
+or broad header change was introduced. Compilation/link: zero warnings and errors.
+Read-only native movement preflight passed 13 routes and 16,592 sampled segments,
+with zero production body, ground or corridor failures. This is offline evidence,
+not live dungeon behavior.
+
+Published artifact: 20261028-181145_automatic-dungeon-recording_3872b2d2.exe
+Manifest executable SHA256: CAB744ECA22FAD6C3230E457C3F944899AA620685E0C34D708F09B51710C8A6F
+Action module: df5f6a17d7b3b94ea2bb45aad0cf61c7f1d45b20.
+Learning implementation at build: a806e12. Existing unrelated core/PlayerBots dirty
+files are preserved and hashed by the manifest; commit IDs alone do not reproduce
+the binary. Build and publication succeeded in 57.7 seconds. Local and
+published executable hashes match; normal linker output remains intact. The next-
+start selected build and installed server/helper launch scripts match publication.
+The previously configured build completion notification was sent.
+
+No server restart, game/helper launch, database mutation, production model
+initialization/training or push occurred. Private automatic-observer settings are
+absent: publication installs code, not a character identity. One-time private
+settings and optional explicit per-dungeon policy initialization remain before
+normal server startup can enable useful capture/training. Live completion coverage,
+input behavior, memory invitations and learned combat remain as previously stated.
+
+
+## 2026-10-28 - Private observer setup prepared; character selection pending
+
+User requested one-time observer setup after the successful build. Verified the
+installed launcher, Python environment, recorder, loopback SOAP endpoint and the
+existing private credential-file path without reading or publishing secret values.
+Enabled the passive client-observation configuration for the next server start,
+with a backup, while preserving disabled server action control and unrelated
+settings. Prepared a restricted-permission private pending settings file and
+movement bindings; it is deliberately not the filename the launcher activates.
+No existing learning configuration unambiguously selected a human character.
+Character GUID and actual movement-binding confirmation remain pending; no prior
+addon/account character was guessed. Parsed installed startup scripts and private
+JSON and checked paths/dependencies offline, without invoking the startup scripts
+or connecting to game/server/database services. A character lookup connection and
+existing database client are available if a confirmed name needs a narrow lookup;
+no query was performed during preparation.
+
+The client-policy area contains zero registries/checkpoints. Capture can operate
+without them, but completion cannot train a missing policy: saved recordings await
+explicit matching per-dungeon initialization. No production models were created,
+reset or trained. No build, runtime start/restart, helper/game/audio launch, input,
+database mutation or push occurred. Setup is prepared, not activated or live tested.
+
+## October 29, 2026 - recent dungeon recording audit
+
+Read-only live runtime inspection found recent schema-1 gameplay telemetry:
+Sunken Temple (1715 events), preceded by Maraudon (13233 and 14133 events).
+These include state/input/spell events, end with observer_changed, and report
+zero dropped events. Event counts are not behavior-cloning samples; observer
+change does not prove successful dungeon completion.
+
+Only pending automatic-demonstration settings exist, not the active filename
+required by the installed normal launcher. The configured client-policy data
+folder is empty; no human demonstration sessions, checkpoints or training summary
+were found there. No helper logs were found in its configured log directory.
+Recent telemetry capture is confirmed; automatic behavior-cloning training is not.
+No live settings, models, server, helper, input, training or build were changed or
+started. Existing dirty character-selection work was preserved. Before further
+implementation, distinguish telemetry ingestion from passive demonstrations.
+## October 29, 2026 - navigation-first scope and Aider trial
+
+User deferred learned combat: prioritize dungeon navigation/pathfinding and keep
+native PlayerBots combat. User proposed navigation-only collection with full
+combat collection available later. Recommended selectable recorder profiles,
+retaining state/time/instance and combat/death/casting boundaries for segmentation.
+No recorder profile or live control change has been implemented.
+
+Aider generated a staged offline route extractor. Independent review rejected it:
+nine test methods produced 23 subcase errors, including a missing episode key on
+the second point; inspection found combat/invalid samples could bridge segments.
+No candidate was integrated or trained. Prompt and candidate retained locally;
+manual/handoff record failure and need for smaller tasks. Existing raw recordings
+and native combat behavior are unchanged. No build or server restart performed.
+## October 29, 2026 - navigation-first recorder profiles and build
+
+User narrowed this phase to dungeon navigation, with native PlayerBots combat.
+Core source commit 879c10b5e483a0c30607d3fda2169ae315a50585 tracks the observer and
+adds navigation (default) and full recording profiles. Navigation retains position,
+facing, alive/combat/casting boundaries and movement requests; detailed spell,
+party and target collection remains available in full mode. Older logs are intact.
+No trained pathfinding policy, playback controller or automatic training activation
+was added. The separate passive demonstration helper remains pending setup.
+
+Aider drafted/repaired the isolated helpers, applied supervisor-reviewed exact
+integration edits, and invoked the unchanged guarded build. Native assertions,
+independent JSON checks, formatting and 19 offline fixtures passed. Compiler
+reported zero warnings/errors; movement preflight, publication, artifact hash and
+selected-build checks passed. The manifest records the core commit above and
+existing unrelated dirty source. SQL-style tooling could not fetch its remote;
+no SQL changed. No server start/restart, training or push occurred. In-game behavior
+requires the user's manual restart and verification. Voice commands are unchanged.
+Aider's first candidates contained defects; supervision and repairs were required.
+Prompt artifacts and private session logs stay in the local coding area.
+## October 29, 2026 - requested recording/execution chat switch
+
+User requested switching their logged-in character from recording to a pretrained
+navigation model via chat, with native PlayerBots combat. Existing client executor
+rejects native SelfBot and the older server action lease is druid/Wailing-Caverns
+specific. Neither supplies this general switch; no compatible recent-dungeon
+checkpoint exists in the configured client-policy store. First target selection
+(Maraudon recommended versus Sunken Temple) was requested from the user.
+
+Aider drafted a common point validator in staging. Seven independent test methods
+found eight failed subcases and one error (schema/kind checks omitted, bool numeric
+acceptance, incomplete casting evidence and integer overflow). Candidate was not
+integrated. Requirements and authority/model gaps are recorded in the ignored core
+plan. No switch, trained model, helper startup, character control, server build or
+restart was performed for this request yet. The prior recorder-profile build stays
+available and unchanged. Do not describe raw route recording as learned playback.
+## October 29, 2026 - bidirectional navigation handoff implementation
+
+User requested an in-dungeon chat switch between human recording and learned
+navigation, with native PlayerBots combat and local Aider collaboration. Core
+revision e32e08f57 implements explicit run/record/status commands, expiring
+sequence-bound control, game-thread movement over validated navigation-mesh paths,
+manual takeover and human-only recording boundaries. No server was launched.
+The Python helper trains closed movement segments separately, retains accepted
+per-dungeon memories, rejects incompatible checkpoints and starts no reinforcement
+learning. Startup/publication changes prepare the helper for the next manual
+server launch; existing private settings are preserved and credentials stay local.
+
+Aider's validator and review drafts failed independent inspection. The window
+helper also needed a supervisor-authored correction, applied through Aider with
+an explicit file argument. Six independent window tests passed after that repair.
+Aider then invoked the offline validation harness: seven navigation, nine SOAP,
+nineteen observer and twelve publication tests passed, plus native command
+assertions and mocked startup/PowerShell checks. Exit zero alone was not treated
+as evidence. The requested guarded server build is the next step, not completed.
+
+Short-interval neural trials failed quality checks. One-second direction windows
+produced 584 examples from an older Maraudon visit and same-recording held-out
+direction mean squared error about 0.150. That checkpoint passed the 0.20 offline
+interpolation gate; this does not establish independent run success or a dungeon
+clear. A simple rollout without combat reached a demonstration-support boundary.
+Native combat transitions and repeated in-game handoff remain user tests after
+manual restart. Unsupported regions return control for additional human teaching.
+## October 29, 2026 - navigation handoff build delivered
+
+Aider invoked the authorized guarded navigation-mode-switch build after offline
+validation and source commits. Compilation finished with zero warnings/errors;
+movement preflight passed, publication and selected-build hashes matched. Artifact
+20261029-142556_navigation-mode-switch_3872b2d2.exe includes core e32e08f57 and
+preserved unrelated dirty source. Startup now prepares a navigation helper for
+the next manual server launch; settings paths, credential availability, observer,
+loopback SOAP and client-bot permission prerequisites were inspected. No server,
+helper or live character was started. Telegram build and Aider notifications sent.
+The remaining step is a user-run in-game record/run/record test and native combat
+handoff. Accepted interpolation metrics and compilation are not a dungeon clear.
+Post-build maintenance review found that equal-size repeat training could replace
+a better accepted checkpoint with a worse, still-passing one. Canonical and
+per-record promotion now preserve the better validation result for equal coverage.
+A regression fixture forces that case and verifies both files stay byte-identical;
+all seven navigation tests passed again. This Python-only fix changes no compiled
+server code and requires no additional server build. The final user-requested
+Telegram summary was delivered; no server or live controller was started.
+## November 9, 2026 — one repository for WAI server and optional learning tools
+
+User chose the existing organization repository for both sides, postponing any split until the components
+are independently useful. Server source/configuration, owned adapters and native prerequisite patches
+now occupy the module root; optional controllers/trainers and their documentation live in apps/learning.
+Recording, character control and episodes remain separate internal components with individual enablement
+and dependency checks. Installation uses the normal modules/mod-wai folder and one wai.conf. No custom
+installer or automatic model/runtime installation was added.
+
+The active WAI and original learning checkout remain unchanged. Source inputs and working-tree hashes
+are recorded as provenance; private credentials, journals, recordings, environments, models, third-party
+installers and Netron sources were excluded. Launchers now use explicit Python/credential/model settings,
+with no old voice-checkout/workspace discovery. The diagnostic validator is owned/versioned separately
+inside the repository. Runtime history recording resolves the repository root and still commits only
+this history document.
+
+Evidence: the consolidated seven native translation units passed supported/missing/unsupported API
+syntax checks. Native component/production-hook/adapter fixtures and recording validators passed. After
+moving the optional tools, 95 Python tests and 5 subtests passed, plus pure PowerShell runtime settings
+checks. Existing test-only sibling-output-directory assumptions were removed. Upstream fetches succeeded
+and the checked core/PlayerBots heads remained unchanged. These are offline/source results; CI publication,
+full worldserver linkage, live gameplay/transport and learning quality require separate evidence. No server,
+game client, running model/controller or production training/weights were started or changed.
